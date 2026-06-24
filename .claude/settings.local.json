@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(gh api *)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(python3 -m pip --version)",
+      "Bash(echo \"pip: $\\(python3 -m pip --version 2>&1)",
+      "Bash(cd \"/Users/dbone/Claude/Projects/Markov Models with Aux Context Caching\"; echo \"=== ls pyproject/setup ===\"; ls -1 pyproject.toml setup.py setup.cfg 2>&1; echo \"=== __all__ present? ===\"; grep -n \"__all__\" markov_cache.py 2>&1 || echo \"no __all__\"; echo \"=== __main__ block? ===\"; grep -n \"__main__\" markov_cache.py 2>&1 || echo \"no __main__\"; echo \"=== head ===\"; sed -n '1,20p' markov_cache.py; echo \"=== def/class lines ===\"; grep -nE \"^\\(def |class \\)\" markov_cache.py)",
+      "Bash(python3 -c \"import numpy, matplotlib; print\\('numpy', numpy.__version__, '| matplotlib', matplotlib.__version__\\)\")",
+      "Bash(python3 -m venv .venv)",
+      "Bash(./.venv/bin/python -m pip install --quiet --upgrade pip)",
+      "Bash(./.venv/bin/python -m pip --version)",
+      "Bash(./.venv/bin/python -m pip install -e \"/Users/dbone/Claude/Projects/Markov Models with Aux Context Caching[demos]\")",
+      "Bash(./.venv/bin/python -c \"import markov_cache as m, text_adapter; print\\('markov_cache from', m.__file__\\); print\\('exports', len\\(m.__all__\\), 'symbols'\\); print\\('text_adapter ok'\\)\")",
+      "Bash(./.venv/bin/python demo_conservation.py)",
+      "Bash(git config *)",
+      "Bash(git init *)",
+      "Bash(git add *)",
+      "Bash(git commit -q -m ' *)"
+    ]
+  }
+}

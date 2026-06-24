@@ -1,0 +1,13 @@
+# Python virtual environment
+.venv/
+
+# Byte-compiled / cache
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# Generated figures (reproducible via `python demo_conservation.py`)
+results/
+
+# OS / editor cruft
+.DS_Store

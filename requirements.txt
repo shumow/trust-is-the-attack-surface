@@ -1,0 +1,23 @@
+# Dependencies for the TrustIsTheAttackSurface poisoning analysis.
+#
+# This project consumes the toy global+cache Markov model from its sister repo
+# as an external, versioned library (the two repos are independent; see
+# sister_library_packaging_recommendations.md).
+#
+# matplotlib is pulled in via the markov-cache[demos] extra (demo_conservation.py plots).
+#
+# ── CANONICAL (published) consume path ─────────────────────────────────────────
+# Once the sister repo's packaging commit is pushed and tagged, pin the tag:
+#
+#   markov-cache[demos] @ git+https://github.com/shumow/markov-models-aux-context-caching@v0.1.0
+#
+# Pin a TAG, never a branch/HEAD, so the substrate underneath published results
+# can never change silently. Upgrading is deliberate: bump the tag, re-run
+# demo_conservation.py, confirm the figures/correlations hold, then commit the bump.
+#
+# ── LOCAL DEV path (active) ────────────────────────────────────────────────────
+# Until v0.1.0 is pushed, install editable from the local sibling clone:
+#
+#   pip install -e "../Markov Models with Aux Context Caching[demos]"
+#
+-e ../Markov Models with Aux Context Caching[demos]
