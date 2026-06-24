@@ -6,18 +6,14 @@
 #
 # matplotlib is pulled in via the markov-cache[demos] extra (demo_conservation.py plots).
 #
-# ── CANONICAL (published) consume path ─────────────────────────────────────────
-# Once the sister repo's packaging commit is pushed and tagged, pin the tag:
-#
-#   markov-cache[demos] @ git+https://github.com/shumow/markov-models-aux-context-caching@v0.1.0
-#
-# Pin a TAG, never a branch/HEAD, so the substrate underneath published results
-# can never change silently. Upgrading is deliberate: bump the tag, re-run
+# ── CANONICAL consume path (active) ────────────────────────────────────────────
+# Pinned to a TAG, never a branch/HEAD, so the substrate underneath published
+# results can never change silently. Upgrading is deliberate: bump the tag, re-run
 # demo_conservation.py, confirm the figures/correlations hold, then commit the bump.
-#
-# ── LOCAL DEV path (active) ────────────────────────────────────────────────────
-# Until v0.1.0 is pushed, install editable from the local sibling clone:
+markov-cache[demos] @ git+https://github.com/shumow/markov-models-aux-context-caching@v0.1.0
+
+# ── LOCAL DEV alternative ──────────────────────────────────────────────────────
+# To hack on the substrate alongside this repo, install it editable from a local
+# sibling checkout instead of the line above:
 #
 #   pip install -e "../Markov Models with Aux Context Caching[demos]"
-#
--e ../Markov Models with Aux Context Caching[demos]
