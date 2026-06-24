@@ -84,11 +84,13 @@ Not performed automatically (pushing/tagging are outward + the user's call):
 - order 1: corr(benefit,propagated)=+0.520, corr(benefit,reliance)=+0.564, corr(benefit,static)=−0.990
 - order 3: corr(benefit,propagated)=+0.968, corr(benefit,reliance)=+0.933, corr(benefit,static)=−0.936
 
-### Remaining: Workstream D (user / outward actions — not done automatically)
-In the sister clone `../Markov Models with Aux Context Caching` (2 uncommitted files:
-`pyproject.toml`, `__all__` edit in `markov_cache.py`):
-1. Review the diff.
-2. `git commit -am "Package as installable library (pyproject + __all__)"`
-3. `git tag v0.1.0 && git push --follow-tags`
-4. In this repo, switch `requirements.txt` from the editable local line to the
-   canonical `markov-cache[demos] @ git+https://…@v0.1.0` pin.
+### Workstream D — handoff (COMPLETE)
+The packaging changes were captured as `package-as-library.patch` (committed here),
+the sister repo's working tree was reverted clean, and the user then applied the
+patch, added an MIT license, committed, and pushed `markov-cache` **v0.1.0** to the
+sister repo. This repo's `requirements.txt` is now pinned to that published tag and a
+clean install from it reproduces the documented correlations (verified). This repo is
+its own public project at https://github.com/shumow/trust-is-the-attack-surface,
+MIT-licensed.
+
+All workstreams complete; nothing outstanding.

@@ -28,13 +28,19 @@ python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-By default `requirements.txt` installs the substrate library editable from a local
-sibling checkout (`../Markov Models with Aux Context Caching`). For a self-contained
-install once the library is published/tagged, switch to the canonical pinned line
-documented in [requirements.txt](requirements.txt):
+`requirements.txt` pins the substrate library to a published tag, so a fresh clone
+is self-contained:
 
 ```
 markov-cache[demos] @ git+https://github.com/shumow/markov-models-aux-context-caching@v0.1.0
+```
+
+To hack on the substrate alongside this repo, install it editable from a local
+sibling checkout instead (see the commented line in
+[requirements.txt](requirements.txt)):
+
+```bash
+pip install -e "../Markov Models with Aux Context Caching[demos]"
 ```
 
 ## Reproduce
