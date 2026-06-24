@@ -1,0 +1,572 @@
+\documentclass[11pt]{article}
+
+% --- packages (all standard; compiles on stock TeX Live / Overleaf) ---------
+\usepackage[margin=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}      % scalable fonts (needed for microtype expansion on BasicTeX)
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{caption}
+\usepackage[hidelinks]{hyperref}
+\usepackage{microtype}
+
+\graphicspath{{figures/}}
+
+% --- theorem environments ---------------------------------------------------
+\theoremstyle{plain}
+\newtheorem{proposition}{Proposition}
+\newtheorem{lemma}{Lemma}
+\newtheorem{conjecture}{Conjecture}
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}
+\theoremstyle{remark}
+\newtheorem{remark}{Remark}
+
+% --- shorthand --------------------------------------------------------------
+\newcommand{\bits}{\,\text{bits/symbol}}
+\newcommand{\pictx}{\pi_{\text{ctx}}}
+\newcommand{\Pglob}{P_{\text{g}}}
+\newcommand{\xstar}{x^{\!*}}
+\newcommand{\norm}[1]{\left\lVert #1 \right\rVert}
+\newcommand{\TV}{\mathrm{TV}}
+\DeclareMathOperator{\supp}{supp}
+
+\title{\bfseries Trust Is the Attack Surface:\\[2pt]
+A Cryptanalytic Reading of In-Context Memory Poisoning\\
+in a Markov Mixture Model}
+\author{Dan Shumow\thanks{Research-style write-up of the analysis in the
+open-source project \texttt{trust-is-the-attack-surface}, built on the toy model
+\texttt{markov-models-aux-context-caching}. All figures and numbers are reproduced by
+\texttt{demo\_conservation.py} in that repository.}}
+\date{June 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+A large language model relies on two memories: the frozen weights, and the context
+window it is handed at run time. In-context learning is the model leaning on the second
+memory, and it is tempting to assume a \emph{conservation law}: the more usefully a model
+relies on its context, the more an attacker who poisons that context can steer it---so
+that usefulness and exploitability are two names for one quantity. We test this on a
+deliberately minimal model where the question has an exact answer: a global (parametric)
+Markov model linearly combined with an online Markov \emph{cache} (the context window),
+evaluated prequentially in bits per symbol. Reading context-poisoning as a
+\emph{differential attack} makes the objects of differential cryptanalysis---per-round
+difference decay, the differential hull, weak-key leverage---\emph{literally exact} here
+rather than heuristic, because the predictor genuinely is a Markov chain. We find the
+clean conservation law is \emph{false as stated}. Exploitability does not track
+usefulness; it tracks \emph{trust}, the weight the model places on context, and trust and
+usefulness coincide only under \emph{context sparsity}. With a dense (low-order) cache,
+trust saturates near $0.9$ regardless of benefit, and a propagated poison stays maximally
+effective \emph{exactly where the cache hurts the model by more than a bit per symbol};
+the usefulness--exploitability correlation collapses from $0.97$ to $0.52$. We also exhibit
+a \emph{condensation} transition: in generation a single self-reinforcing injected count is
+shrugged off below a trust threshold and locks in above it. We close by stating a
+falsifiable \emph{trust-saturation conjecture} for real transformers, with induction as the
+prime suspect, and a defensive corollary: bound \emph{trust}, not usefulness.
+\end{abstract}
+
+% ===========================================================================
+\section{Introduction}
+% ===========================================================================
+A language model has two memories. One is the weights---slow, expensive, frozen at
+deployment, holding what the model \emph{knows}. The other is the context window---fast,
+free, rewritten every turn, holding what the model has just been \emph{told}. In-context
+learning is the model leaning on that second memory, and it is most of what makes these
+systems feel adaptive.
+
+Anything a model leans on, an attacker can lean on too. The natural worry is clean:
+\emph{the more usefully a model relies on its context, the more an attacker who poisons
+that context can steer it}. Usefulness and exploitability would then be two readings of one
+quantity---the model's dependence on what it was just told. Call it the
+\textbf{conservation hypothesis}. It is the kind of thing one would put in a threat model
+without checking. We checked it, on a model where it has an exact answer, and it is wrong
+in an instructive way.
+
+\paragraph{Why a toy, and why a cipher.}
+One cannot ask this question cleanly of a real transformer: the quantities one wants---how
+far a single poisoned token's influence propagates, how much a perturbation is
+amplified---are uncomputable when attention mixes content-dependently, since the mixing
+operator is itself a function of the input being perturbed. So we drop to a model that
+keeps the one feature under study and discards the rest: \emph{two memories, linearly
+combined}. A frozen global Markov model stands in for the weights; an online Markov cache,
+estimated live from the current sequence, stands in for the context window. The cache's
+warm-up \emph{is} in-context learning, made of nothing but counts. This is the
+from-scratch, no-neural-network version of the global-versus-in-context decomposition
+studied by Bietti et al.~\cite{bietti2023}.
+
+Reading poisoning through a cryptographic lens is natural because injecting a crafted input
+to steer an output is, structurally, a \textbf{differential attack}: introduce a difference
+at the input and ask how it propagates to the output. The payoff of going to a Markov model
+is that the objects of differential cryptanalysis that are only ever \emph{approximations}
+for a cipher become \emph{exact} here. The ``Markov cipher'' assumption that lets
+cryptanalysts multiply per-round probabilities~\cite{lai1991} is normally a heuristic; here
+it holds by construction, because the predictor genuinely is a Markov chain. The
+worst-case per-step decay of a difference is the chain's Dobrushin coefficient, in closed
+form; the differential hull is a resolvent one can actually invert; and the leverage of a
+single poisoned count in a context seen $n$ times is exactly $1/(n+a)$, plain estimator
+variance.
+
+\paragraph{Contributions.}
+\begin{enumerate}\itemsep2pt
+\item A dictionary (\S\ref{sec:dict}) translating context-poisoning into differential
+cryptanalysis, with four objects (\S\ref{sec:exact}) that are exact rather than approximate
+on this architecture.
+\item A measured refutation of the conservation hypothesis (\S\ref{sec:results}):
+exploitability tracks \emph{trust}, not usefulness; the two coincide only under context
+sparsity. With a dense cache the model is fully poisonable precisely where its context is
+useless.
+\item A condensation phase transition in generation (\S\ref{sec:condensation}): a single
+self-reinforcing poison locks in once trust crosses a threshold.
+\item A falsifiable trust-saturation conjecture for real transformers and a defensive
+corollary (\S\ref{sec:conjecture}).
+\end{enumerate}
+
+% ===========================================================================
+\section{The model}\label{sec:model}
+% ===========================================================================
+Fix a vocabulary $[V]=\{0,\dots,V-1\}$. A document is a sequence $x_{1:T}$, and a predictor
+assigns $P(x_t\mid x_{1:t-1})$. We evaluate \emph{prequentially}: score the next symbol,
+then update on it, and report cross-entropy in bits per symbol,
+\begin{equation}\label{eq:xent}
+H \;=\; -\frac1T\sum_{t=1}^{T}\log_2 P\!\left(x_t \mid x_{1:t-1}\right).
+\end{equation}
+
+\paragraph{Global model (the weights).}
+The global predictor $\Pglob(\cdot\mid c)$ is a corpus-trained, frozen Markov back-off model
+(interpolated Witten--Bell~\cite{goodman2001}) over orders $0..K_g$. It is a strong,
+tuning-free baseline that backs unseen high-order contexts off to lower orders rather than
+to the uniform distribution, so it ``knows something everywhere.'' Its internals do not
+matter below; only that it is fixed at deployment.
+
+\paragraph{Cache (the context window).}
+The cache is an order-$k$ count table built online. Writing $c=(x_{t-k},\dots,x_{t-1})$ for
+the current context state, let $N_c(w)$ be the number of times symbol $w$ has followed $c$
+\emph{so far in this sequence}, with $n_c=\sum_w N_c(w)$. The cache starts empty and is
+updated after each observation.
+
+\paragraph{Combination (the trust knob).}
+We combine the global prior with the cache evidence by a Dirichlet (Bayesian) rule: the
+global model is the prior, the cache is data,
+\begin{equation}\label{eq:dir}
+P(w\mid c)\;=\;\frac{N_c(w)+a\,\Pglob(w\mid c)}{n_c+a}.
+\end{equation}
+Equivalently $P(\cdot\mid c)=\rho_c\,\widehat{P}_{\text{cache}}(\cdot\mid c)+(1-\rho_c)\,
+\Pglob(\cdot\mid c)$, an adaptive linear interpolation whose weight on the cache,
+\begin{equation}\label{eq:reliance}
+\rho_c \;=\; \frac{n_c}{n_c+a},
+\end{equation}
+grows automatically with evidence. We call $\rho_c$ the \textbf{reliance} (or
+\textbf{trust}): the realized weight the prediction places on context. The prior strength
+$a>0$ is the only knob; small $a$ lets the cache dominate. When the cache has never seen
+$c$, \eqref{eq:dir} collapses to $\Pglob$.
+
+\paragraph{Synthetic source (a dial on how much context exists).}
+Each document is generated from two layers. A single transition matrix $G$ (rows drawn from
+$\mathrm{Dir}(\gamma\mathbf 1)$ with $\gamma=1$, high entropy) is shared by every document. Each
+document also draws its own peaky matrix $D$ (from $\mathrm{Dir}(\delta\mathbf 1)$,
+$\delta=0.05$). At each step we sample the next symbol from $D[x_{t-1}]$ with probability
+$\pictx$, else from $G[x_{t-1}]$:
+\begin{equation}\label{eq:source}
+x_t \;\sim\; \begin{cases}D[x_{t-1}] & \text{w.p. } \pictx,\\[2pt] G[x_{t-1}] &
+\text{w.p. } 1-\pictx.\end{cases}
+\end{equation}
+The global model, trained across many documents, can only ever learn $G$; each document's
+$D$ is random and washes out in the average. So the cache's test-time gain is \emph{exactly
+the in-context information the global model provably cannot have}, and $\pictx$ is a clean
+dial on how much of it exists---equivalently, how much there is for an attacker to exploit.
+A high-entropy $G$ is deliberate: at $\pictx=0$ documents are unstructured, so a context
+recurring is \emph{not} automatic, and trust is free to vary rather than being handed out by
+a small context space.
+
+% ===========================================================================
+\section{A cryptanalytic dictionary}\label{sec:dict}
+% ===========================================================================
+The same forward computation reads three ways. The point of the toy is that the rightmost
+column is \emph{exact and computable}, where the middle column is only ever approximate.
+
+\begin{center}\small
+\begin{tabular}{p{0.31\textwidth}p{0.28\textwidth}p{0.32\textwidth}}
+\toprule
+Differential cryptanalysis & Transformer & This model (global $+$ cache) \\
+\midrule
+Plaintext difference (finite DDT) & token edit $\to$ embedding diff. & a single injected
+symbol / count \\
+Round function & attention $+$ MLP block & one mixture step
+$M=\rho\,\text{cache}+(1{-}\rho)\,\text{global}$ \\
+Markov-cipher assumption & \emph{approximation} & \textbf{literally true}---it is a Markov
+chain \\
+Max diff.\ probability / round & unbounded, no branch number & \textbf{Dobrushin coefficient}
+$\tau(M)$, closed form \\
+Differential hull (uncomputable) & sum over a trail cluster & \textbf{resolvent}
+$(I-M)^{-1}$ on mean-zero space \\
+Weak keys / encystment site & dead ReLUs, null tokens & \textbf{low-count contexts},
+leverage $1/(n+a)$ \\
+Induction head (copy + vector) & QK match-and-copy & PPM longest-match (same dual role) \\
+Self-propagation & autoregressive feedback & \textbf{nonlinear P\'olya urn}, condensation \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Every row that is approximate for a transformer becomes closed form here because the
+architecture is an affine map on the probability simplex with no softmax to hide the
+difference behavior inside.
+
+% ===========================================================================
+\section{Four objects made exact}\label{sec:exact}
+% ===========================================================================
+A \emph{difference} is a signed measure $\delta\in\mathbb R^V$ with $\sum_w\delta(w)=0$; it
+is the cryptanalyst's input difference, here a perturbation of a predictive row. Let $M$ be
+the row-stochastic operator the chain applies (context state to next-symbol distribution,
+lifted to a transition on context states). A difference propagates by $\delta\mapsto
+\delta^{\!\top}M$.
+
+\paragraph{(1) Per-step decay is the Dobrushin coefficient.}
+\begin{definition}[Dobrushin ergodic coefficient~\cite{dobrushin1956}]
+For a row-stochastic $M$,
+\[
+\tau(M)\;=\;\tfrac12\max_{s,s'}\norm{M(s,\cdot)-M(s',\cdot)}_1
+\;=\;\max_{s,s'}\norm{M(s,\cdot)-M(s',\cdot)}_{\TV}.
+\]
+\end{definition}
+\begin{lemma}\label{lem:dob}
+For any mean-zero $\delta$, $\;\norm{\delta^{\!\top}M}_1\le \tau(M)\,\norm{\delta}_1$.
+\end{lemma}
+This is the literal ``maximum differential probability per round.'' AES forces it small by
+design (the branch number); the mixture chain simply \emph{has} a value, computable from its
+rows. The wide-trail bound that does not exist for transformers exists here.
+
+\paragraph{(2) The differential hull is the resolvent.}
+The strength of a differential attack is never one trail; it is the \emph{hull}, the sum
+over every path a difference can take between fixed endpoints.
+\begin{proposition}\label{prop:hull}
+On a stationary stretch with fixed operator $M$ and $\tau(M)<1$, the accumulated influence
+of an initial difference $\delta$ is
+\[
+\sum_{t\ge 0}\delta^{\!\top}M^{t}\;=\;\delta^{\!\top}(I-M)^{-1}
+\qquad\text{on the mean-zero subspace,}
+\]
+with $\norm{\delta^{\!\top}(I-M)^{-1}}_1\le \norm{\delta}_1/(1-\tau(M))$.
+\end{proposition}
+The ``thick hull'' that is uncomputable for a transformer is here a Green's function---the
+chain's fundamental matrix---that one can invert.
+\begin{remark}
+In our setting $M$ is not fixed: the cache updates as the sequence streams, so the genuine
+object is a history-dependent product $\prod_t M_t$. Proposition~\ref{prop:hull} is the
+stationary idealization; the \emph{measured} propagated leverage of \S\ref{sec:results} is
+the honest history-dependent version, and it is still explicit because the cache update is
+linear in counts.
+\end{remark}
+
+\paragraph{(3) Encystment: weak keys are low-count contexts, leverage is $1/(n+a)$.}
+\begin{proposition}[Single-count leverage]\label{prop:leverage}
+Fix a context $c$ with cache total $n=n_c$, and let $P=P(\xstar\mid c)$ be the current
+combined probability \eqref{eq:dir} on a target $\xstar$. Injecting one additional count of
+$\xstar$ into $c$ changes that probability by exactly
+\begin{equation}\label{eq:lev}
+\Delta P \;=\; \frac{1-P}{\,n+a+1\,}\;\le\;\frac{1}{n+a+1},
+\end{equation}
+independent of $\xstar$, and $\Delta P\to 0$ as $n\to\infty$.
+\end{proposition}
+\begin{proof}
+Write $P=(N+ag)/(n+a)$ with $N=N_c(\xstar)$ and $g=\Pglob(\xstar\mid c)$. After the
+injection the numerator and total each rise by one count of $\xstar$:
+$P'=(N+1+ag)/(n+1+a)$. Then
+\[
+\Delta P=P'-P=\frac{(N+1+ag)(n+a)-(N+ag)(n+1+a)}{(n+a)(n+1+a)}
+=\frac{(n+a)-(N+ag)}{(n+a)(n+1+a)}=\frac{1-P}{n+1+a},
+\]
+using $N+ag=(n+a)P$ in the last step.\qedhere
+\end{proof}
+This is textbook estimator variance: the weak key is the rare $n$-gram, and ``rare'' is a
+number in the count table. Crucially, \eqref{eq:lev} \emph{shrinks} as the cache fills---a
+fact that, taken alone, would mislead (\S\ref{sec:results}).
+
+\paragraph{(4) Sporulation is a nonlinear P\'olya urn.}
+In \emph{generation}, sampling a symbol increments its own count, so under high reliance the
+process is positively reinforced. Reinforced (P\'olya) urns with super-linear feedback
+exhibit \emph{condensation}: below a threshold the system stays diffuse; above it a single
+early advantage locks in and takes over~\cite{pemantle2007,chung2003}. The order parameter is
+the cache trust $\rho$, and the phenomenon is a measurable phase transition
+(\S\ref{sec:condensation}).
+
+% ===========================================================================
+\section{Experimental setup}\label{sec:setup}
+% ===========================================================================
+We fix $V=32$, global order $K_g=2$, prior strength $a=1$, and sweep $\pictx\in\{0,0.1,
+\dots,0.9\}$ for two cache orders: $k=1$ (\emph{dense}: only $32$ possible contexts, so the
+cache fills regardless) and $k=3$ (\emph{sparse}: most contexts are rare). For each setting
+we measure four quantities.
+
+\begin{description}\itemsep3pt
+\item[Usefulness (benefit).] Bits per symbol saved by the cache versus the global model
+alone, $H_{\text{global}}-H_{\text{cache}}$ from \eqref{eq:xent}. Positive means context
+helps.
+\item[Trust (reliance).] The warmed-up cache weight $\rho$ of \eqref{eq:reliance}, averaged
+over the held-out stream.
+\item[Static leverage (control).] The one-shot, non-propagating poison of
+Proposition~\ref{prop:leverage}: at each live context inject one count of the
+globally-rarest symbol $\xstar=\arg\min_w\Pglob(w)$, and record the immediate swing
+$P'(\xstar)-P(\xstar)$, then undo it. A thin context is always pollutable; the point is that
+a one-shot poison that does not \emph{propagate} is cheap everywhere.
+\item[Propagated leverage.] The honest exploitability. Inject one count of $\xstar$ at a
+single context $c_0$ a quarter of the way through the document ($t_0=T/4$), then let the
+cache keep streaming the \emph{true} document, and accumulate the extra probability the model
+places on $\xstar$ at every later step,
+\begin{equation}\label{eq:prop}
+L_{\text{prop}}\;=\;\sum_{t=t_0}^{T-1}\Big(P^{\text{pois}}(\xstar\mid x_{1:t})
+-P^{\text{clean}}(\xstar\mid x_{1:t})\Big).
+\end{equation}
+This is the discrete Green's-function influence of a unit perturbation through the
+history-dependent cache operator: large exactly when the poisoned context \emph{recurs} and
+is \emph{trusted}.
+\end{description}
+
+% ===========================================================================
+\section{Results: exploitability tracks trust, not usefulness}\label{sec:results}
+% ===========================================================================
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{conservation_law.png}
+\caption{Usefulness versus exploitability across the $\pictx$ sweep (each curve normalized to
+$[0,1]$). \textbf{Left} (cache order 3, sparse / trust earned): usefulness, reliance, and
+propagated leverage rise together, $\mathrm{corr}(\text{benefit},\text{propagated})=0.97$.
+\textbf{Middle} (cache order 1, dense / trust saturated): reliance pins at ${\sim}0.91$ and
+propagated leverage stays high \emph{even where the cache hurts by more than a bit}; the
+correlation collapses to $0.52$. \textbf{Right}: the static one-shot control is
+\emph{anti}-correlated with usefulness in both regimes.}
+\label{fig:conservation}
+\end{figure}
+
+\paragraph{Result 1: the obvious exploitability measure is the wrong one.}
+The one-shot (static) measure is what most people would reach for, and it is
+\emph{anti}-correlated with usefulness ($r\approx-0.99$ at order 3, $-0.99$ at order 1). It
+falls as context becomes more useful, because a warmed-up context has high counts and one
+extra count barely moves anything---Proposition~\ref{prop:leverage} with large $n$. One-shot
+leverage is a red herring; only the \emph{propagated} measure is the right object, exactly
+the cryptographic point that a differential's value is the hull, not a single trail.
+
+\paragraph{Result 2: dense contexts decouple trust from usefulness.}
+Table~\ref{tab:order1} is the alarming regime. With only $32$ order-1 contexts the cache fills
+regardless of $\pictx$, so reliance pins at ${\sim}0.91$ across the entire sweep---including
+$\pictx=0$, where the cache \emph{hurts} by $1.29\bits$. Propagated leverage stays high
+throughout ($1.1$--$1.3$), and $\mathrm{corr}(\text{benefit},\text{propagated})=0.52$.
+\emph{The model is fully poisonable precisely where its context is useless.} Trust is handed
+out for sheer quantity of data, not quality, and the linear mixture weights it by quantity.
+
+\begin{table}[t]
+\centering\small
+\caption{Cache order 1 (dense / trust saturated). Reliance is flat near $0.91$ and
+propagated leverage stays high even where benefit is strongly negative.}
+\label{tab:order1}
+\begin{tabular}{rrrrr}
+\toprule
+$\pictx$ & benefit (bits) & reliance & static (control) & propagated \\
+\midrule
+0.0 & $-1.295$ & 0.915 & 0.174 & 1.177 \\
+0.1 & $-1.257$ & 0.913 & 0.174 & 1.138 \\
+0.2 & $-1.097$ & 0.915 & 0.174 & 1.161 \\
+0.3 & $-0.815$ & 0.914 & 0.172 & 1.145 \\
+0.4 & $-0.469$ & 0.915 & 0.172 & 1.203 \\
+0.5 & $-0.107$ & 0.914 & 0.170 & 1.196 \\
+0.6 & $+0.230$ & 0.913 & 0.168 & 1.185 \\
+0.7 & $+0.744$ & 0.916 & 0.166 & 1.110 \\
+0.8 & $+1.202$ & 0.916 & 0.163 & 1.187 \\
+0.9 & $+1.733$ & 0.916 & 0.159 & 1.293 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Result 3: sparse contexts couple them.}
+Table~\ref{tab:order3} is the safe regime. With many rare order-3 contexts, trust must be
+\emph{earned}: a high-order context accumulates enough counts to be trusted only if it
+actually recurs, and in this source recurrence is itself evidence of genuine local
+structure. So reliance climbs $0.02\to0.39$ with $\pictx$, benefit climbs $-0.02\to+0.47$,
+and propagated leverage climbs $0.52\to0.77$, all together:
+$\mathrm{corr}(\text{benefit},\text{propagated})=0.97$. Here the conservation hypothesis is
+true. This is the regime real high-order / natural-language contexts inhabit---most long
+prefixes are nearly unique---which is why the parent project sees cache reliance ${\approx}
+0.01$ on real prose.
+
+\begin{table}[t]
+\centering\small
+\caption{Cache order 3 (sparse / trust earned). Reliance, benefit, and propagated leverage
+rise together.}
+\label{tab:order3}
+\begin{tabular}{rrrrr}
+\toprule
+$\pictx$ & benefit (bits) & reliance & static (control) & propagated \\
+\midrule
+0.0 & $-0.018$ & 0.020 & 0.496 & 0.522 \\
+0.1 & $-0.018$ & 0.024 & 0.496 & 0.500 \\
+0.2 & $-0.019$ & 0.022 & 0.495 & 0.533 \\
+0.3 & $-0.017$ & 0.037 & 0.492 & 0.532 \\
+0.4 & $-0.034$ & 0.050 & 0.488 & 0.504 \\
+0.5 & $-0.025$ & 0.084 & 0.480 & 0.568 \\
+0.6 & $-0.008$ & 0.128 & 0.470 & 0.515 \\
+0.7 & $+0.064$ & 0.194 & 0.454 & 0.591 \\
+0.8 & $+0.186$ & 0.251 & 0.435 & 0.656 \\
+0.9 & $+0.468$ & 0.385 & 0.404 & 0.774 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[t]
+\centering\small
+\caption{Per-order Pearson correlations across the $\pictx$ sweep. The law holds (propagated
+tracks benefit) only in the sparse regime; the static control is anti-correlated in both.}
+\label{tab:corr}
+\begin{tabular}{lccc}
+\toprule
+cache order & corr(benefit, propagated) & corr(benefit, reliance) & corr(benefit, static) \\
+\midrule
+1 (dense)  & $+0.52$ & $+0.56$ & $-0.99$ \\
+3 (sparse) & $+0.97$ & $+0.93$ & $-0.94$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Summary.}
+The conservation law is \emph{real but conditional}, and the condition is context sparsity.
+Where contexts are dense and trust is handed out for mere quantity of data, trust decouples
+from usefulness and the model is exploitable independent of benefit. Where contexts are
+sparse and trust must be earned from real recurrence, trust and usefulness move together and
+exploitability is, in effect, paid for by capability. The same architecture sits in both
+regimes depending only on how sparse its contexts are.
+
+% ===========================================================================
+\section{Condensation: a phase transition in generation}\label{sec:condensation}
+% ===========================================================================
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.62\textwidth]{condensation.png}
+\caption{Condensation. At fixed high $\pictx$, with one seeded self-loop $\xstar\to\xstar$,
+poison takeover of generation (seeded frequency minus baseline) stays near zero up to
+reliance ${\approx}0.9$, then turns sharply upward---the nonlinear P\'olya-urn knee.}
+\label{fig:condensation}
+\end{figure}
+
+In generation the model samples a symbol and conditions on what it just produced. Under high
+trust this loop is positively reinforcing, a nonlinear P\'olya urn. We seed a single
+self-reinforcing poison ($\xstar\to\xstar$ a few times) at fixed $\pictx$ and sweep the prior
+strength $a$, hence the reliance $\rho$, measuring how much $\xstar$ takes over the generated
+output relative to an unseeded baseline (Table~\ref{tab:cond}, Fig.~\ref{fig:condensation}).
+Takeover stays near zero up to $\rho\approx0.9$, then turns sharply upward: $+0.01$ at
+$\rho=0.65$, $+0.15$ at $\rho=0.96$, and above $0.6$ once $\rho$ crosses $0.99$. A single
+injected count is shrugged off when trust is moderate and \emph{locks in} once trust is high
+enough. Poisoning in-context memory is not necessarily graded; above the knee it is a phase
+change.
+
+\begin{table}[h]
+\centering\small
+\caption{Condensation sweep at fixed $\pictx$: poison takeover versus warmed-up reliance on
+the seeded context. Small $a$ means the cache dominates, raising reliance.}
+\label{tab:cond}
+\begin{tabular}{rrr}
+\toprule
+$a$ & reliance $\rho(\xstar)$ & poison takeover \\
+\midrule
+8.00 & 0.647 & $+0.011$ \\
+4.00 & 0.849 & $+0.053$ \\
+2.00 & 0.888 & $+0.059$ \\
+1.00 & 0.958 & $+0.146$ \\
+0.50 & 0.972 & $+0.373$ \\
+0.25 & 0.990 & $+0.612$ \\
+0.12 & 0.995 & $+0.653$ \\
+0.06 & 0.999 & $+0.649$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% ===========================================================================
+\section{The trust-saturation conjecture}\label{sec:conjecture}
+% ===========================================================================
+The toy is a toy, but it makes a sharp enough claim to name the analogous statement for real
+transformers precisely, so it can be attacked.
+
+\begin{conjecture}[Trust saturation]
+A transformer's in-context exploitability---how much poisoning the context window steers
+downstream generation---is governed by how much the model \emph{trusts} the relevant context
+(the effective weight its computation places on it), not by how much that context helps the
+task. Consequently: \textup{(a)} where context-reliance is earned from genuine, sparse
+structure, as in most natural-language prediction, trust and usefulness coincide and
+poisoning is roughly bounded by benefit; but \textup{(b)} there exist context regimes where
+trust saturates independent of usefulness, and there a model is maximally poisonable exactly
+where its context contributes least, with a condensation-like threshold above which a single
+injected element can take over generation.
+\end{conjecture}
+
+There is a real reason to think transformers live mostly in the safe regime (a):
+high-order natural-language contexts are sparse---most long prefixes are nearly unique---which
+is the earned-trust regime, consistent with the toy's reliance ${\approx}0.01$ on real text.
+If that is the whole story, in-context exploitability is paid for by in-context capability.
+
+The conjecture's bite is regime (b): that trust-saturation regimes \emph{exist and are
+findable}, and are exactly the dangerous ones. The prime suspect is \textbf{induction}---the
+copy mechanism~\cite{olsson2022}. An induction head trusts a context span because it
+\emph{matches} a previous span, not because copying it helps; the toy's longest-match
+predictor is precisely this, and it earns trust on grounds orthogonal to benefit. So the
+conjecture predicts that induction-dominated, highly repetitive, or heavily templated
+contexts---repeated boilerplate, structured formats, long verbatim quotes, retrieval dumps
+with duplicated passages---are where trust most decouples from usefulness, and where a single
+planted token is most likely to undergo lock-in, with poisonability there roughly
+\emph{independent} of how much the repeated content actually informs the task.
+
+\paragraph{Experiments.}
+Build a transformer analogue of propagated leverage (influence of a poisoned context token on
+downstream generation, via attention-based influence or activation patching) and measure it
+against an analogue of trust (effective attention weight on that token) and against task
+benefit, swept from natural prose to maximally repetitive input. The conjecture predicts
+leverage tracks the trust axis and not the benefit axis, with the gap opening up toward
+induction-dominated inputs. Probe the condensation threshold directly: plant one adversarial
+token in a repetitive context and measure takeover as a function of attention weight or
+sampling temperature, looking for the knee.
+
+\paragraph{Defensive corollary.}
+If you are hardening a model against context poisoning, the quantity to watch and to bound is
+\emph{trust, not usefulness}---specifically trust saturation in dense or repetitive contexts,
+because a context can be fully trusted while contributing nothing, and that is the exact
+configuration an attacker wants. A safe-by-default policy caps how much weight any context
+span can earn on the basis of sheer recurrence, independent of whether that span is pulling
+its weight on the task. Concretely on the toy: raising $a$ or otherwise capping $\rho$ bounds
+the single-count leverage \eqref{eq:lev} and pulls generation back below the condensation
+knee. Tuning defenses against measured usefulness would protect precisely the wrong regime.
+
+% ===========================================================================
+\section{What is claimed, and what is not}\label{sec:honesty}
+% ===========================================================================
+The conservation hypothesis was falsified by its own experiment, which we take to be the most
+trustworthy route to the replacement. What survives is narrower: exploitability follows
+trust; trust and usefulness coincide only under context sparsity; and dense-context trust
+saturation is a poisonability regime hiding in plain sight. The exact pieces---Dobrushin
+coefficient as per-step contraction, fundamental matrix as hull, leverage $1/(n+a)$, the
+reinforced-urn condensation---are standard Markov-chain results; the contribution is the
+\emph{assembly} lining them up one-to-one with differential cryptanalysis and reading the
+cache as a poisonable membrane. All of it is established on the toy, exactly. None of it is
+yet measured on a transformer: the conjecture of \S\ref{sec:conjecture} is stated so that it
+can be attacked, and the claim that natural language sits in the earned-trust regime is
+motivated by the toy's own real-text reliance but remains an analogy across architectures
+until run through real tokenized text---the obvious next step.
+
+% ===========================================================================
+\begin{thebibliography}{9}
+\bibitem{bietti2023} A.\ Bietti, V.\ Cabannes, D.\ Bouchacourt, H.\ J\'egou, L.\ Bottou.
+\emph{Birth of a Transformer: A Memory Viewpoint.} NeurIPS, 2023.
+\bibitem{olsson2022} C.\ Olsson et al. \emph{In-context Learning and Induction Heads.}
+Transformer Circuits Thread, Anthropic, 2022.
+\bibitem{lai1991} X.\ Lai, J.\ L.\ Massey, S.\ Murphy. \emph{Markov Ciphers and Differential
+Cryptanalysis.} EUROCRYPT, 1991.
+\bibitem{dobrushin1956} R.\ L.\ Dobrushin. \emph{Central Limit Theorem for Nonstationary
+Markov Chains.} Theory of Probability and Its Applications, 1(1):65--80, 1956.
+\bibitem{goodman2001} J.\ T.\ Goodman. \emph{A Bit of Progress in Language Modeling.}
+Computer Speech \& Language, 15(4):403--434, 2001.
+\bibitem{pemantle2007} R.\ Pemantle. \emph{A Survey of Random Processes with Reinforcement.}
+Probability Surveys, 4:1--79, 2007.
+\bibitem{chung2003} F.\ Chung, S.\ Handjani, D.\ Jungreis. \emph{Generalizations of
+Polya's Urn Problem.} Annals of Combinatorics, 7:141--153, 2003.
+\end{thebibliography}
+
+\end{document}

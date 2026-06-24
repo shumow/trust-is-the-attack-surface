@@ -54,11 +54,23 @@ per-cache-order correlation table. Expected: order-3 (sparse / earned trust)
 `corr(benefit, propagated) ≈ 0.97`; order-1 (dense / saturated trust) `≈ 0.5`;
 condensation knee at cache reliance ≈ 0.9.
 
+## Paper
+
+A formal write-up lives in [`latex/`](latex/). Build it with a standard TeX
+distribution:
+
+```bash
+cd latex && pdflatex trust_is_the_attack_surface.tex && pdflatex trust_is_the_attack_surface.tex
+```
+
+(Two passes resolve cross-references; the bibliography is inline, so no `bibtex` step.)
+
 ## Layout
 
 | File | What |
 |---|---|
-| `trust_is_the_attack_surface.md` | The article. |
+| `trust_is_the_attack_surface.md` | The article (essay form). |
+| `latex/trust_is_the_attack_surface.tex` | The results as a math/CS article (built PDF: `latex/trust_is_the_attack_surface.pdf`). |
 | `docs_06_conservation_law.md` | Worked write-up + the cryptanalysis dictionary. |
 | `llm_detection_research_proposal.md` | Related research proposal. |
 | `demo_conservation.py` | Reproduces the figures and the correlation table. |
