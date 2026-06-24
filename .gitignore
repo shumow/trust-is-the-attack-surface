@@ -11,3 +11,6 @@ results/
 
 # OS / editor cruft
 .DS_Store
+
+# Local Claude Code settings
+.claude/settings.local.json
