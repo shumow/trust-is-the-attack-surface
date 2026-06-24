@@ -49,6 +49,11 @@ demote demo/GUI dependencies to optional extras, and consume it here as a
 
 ## Concrete changes to the sister repo
 
+> These changes (§1 `pyproject.toml` + §2 `__all__`) are provided ready-to-apply as
+> [`package-as-library.patch`](package-as-library.patch) in this repo. Apply with:
+> `cd <sister-repo> && git apply package-as-library.patch`. (Plain `git diff` patch —
+> use `git apply`, not `git am`; it carries no commit message/authorship.)
+
 ### 1. Add a `pyproject.toml`
 
 Expose `markov_cache` (and `text_adapter`) as installable top-level modules, with

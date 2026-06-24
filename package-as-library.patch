@@ -1,0 +1,57 @@
+diff --git a/markov_cache.py b/markov_cache.py
+index 06a8c0f..43ecf73 100644
+--- a/markov_cache.py
++++ b/markov_cache.py
+@@ -26,6 +26,20 @@ import numpy as np
+ 
+ LOG2E = 1.0 / np.log(2.0)
+ 
++# Public API. Downstream consumers (e.g. the TrustIsTheAttackSurface poisoning
++# analysis) depend on this surface; treat additions as deliberate and keep it stable.
++__all__ = [
++    # synthetic source
++    "peaky_transition_matrix", "sample_document", "make_corpus",
++    # models / predictors
++    "MarkovCounts", "BackoffModel", "CachePredictor", "PpmPredictor",
++    # distributions / combination
++    "global_dist", "combine_linear", "combine_dirichlet",
++    # evaluation / use
++    "evaluate", "reliance_curve", "evaluate_predictor",
++    "make_predictor", "generate", "suggest", "tune_ppm",
++]
++
+ 
+ # --------------------------------------------------------------------------- #
+ # Synthetic source
+diff --git a/pyproject.toml b/pyproject.toml
+new file mode 100644
+index 0000000..697b6ab
+--- /dev/null
++++ b/pyproject.toml
+@@ -0,0 +1,26 @@
++[build-system]
++requires = ["setuptools>=61"]
++build-backend = "setuptools.build_meta"
++
++[project]
++name = "markov-cache"
++version = "0.1.0"
++description = "Toy global+cache Markov model: parametric memory vs. context window."
++readme = "README.md"
++requires-python = ">=3.9"
++license = { text = "MIT" }
++dependencies = ["numpy"]
++
++[project.optional-dependencies]
++# Plotting demos (demo_*.py). Not needed to import the library.
++demos = ["matplotlib"]
++# Interactive Streamlit GUI (gui_app.py).
++gui = ["streamlit", "matplotlib"]
++
++[project.urls]
++Homepage = "https://github.com/shumow/markov-models-aux-context-caching"
++
++[tool.setuptools]
++# Single-module library plus the real-text adapter. The demo_*/gui scripts are
++# intentionally NOT packaged: they are applications, not library code.
++py-modules = ["markov_cache", "text_adapter"]
