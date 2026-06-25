@@ -371,6 +371,38 @@ the 3–4× saving and the "min at the knee, not saturation" structure are the r
 findings.) This closes the delivery-side optimization: the cheapest hijack spends just
 enough on lock-in to clear the condensation knee and puts the rest into entry.
 
+## Result 3.1 — contagion under INDUCTION (PPM), the conjecture's prime suspect (`demo_contagion_ppm.py`)
+
+The discussion sections of both write-ups conjecture that the phenomena transfer to real
+transformers via the induction (copy) mechanism, which trusts a span because it *matches*,
+not because copying helps. The toy ships that mechanism: `PpmPredictor` is a variable-order
+online longest-match cache ("saw A B … now see A → predict B")—an induction-head surrogate
+and the structural mirror of the fixed-order count cache. Swapping it in tests the conjecture
+*within* the toy. Mechanistic contrast: the count cache earns trust as reliance `n/(n+a)`
+(many presentations); PPM earns it from a single long near-deterministic match (a couple of
+presentations). All three predictions confirmed (`results/contagion_ppm.png`,
+`results/contagion_ppm_worm.png`):
+
+- **(A) Cheaper to plant.** A rainbow quine reproduces (fidelity ≥0.9) after **~3
+  presentations under PPM vs ~12–32 for the count cache**; PPM locks sharply to 1.0 by
+  rep 4. (At rep 1 PPM is *worse*—a once-seen suffix keeps only `1−d`=0.25 mass—so induction
+  needs to have seen the span ≥2× before it copies confidently.)
+- **(B) Structural reach.** For a de Bruijn `B(2,3)` (needs order 3): the order-1 cache
+  **cannot** reproduce it (fidelity plateaus ~0.48), the order-matched order-3 cache is
+  brittle (~0.76 at 8 reps, 0.91 only at 32), but **PPM hits 0.92 at 3 reps and 1.0 by 6**,
+  never told the order. Induction lifts the order/length brittleness ladder.
+- **(C) More transmissible (worm).** Serial passage, `T=160`: under the count cache strings
+  of length `p≥3` die out (the 2.4 result); under PPM **every length 1–8 sustains**, each
+  reaching the full `T/p` broadcast ceiling (p=1→159, 2→80, 3→53, 5→32, 8→20). Because
+  reproduction needs only ~2–3 copies, `k_thresh` collapses, `R0` stays `>1` far longer, and
+  the critical length jumps. Long worms that count-trust kills are viable under induction.
+
+**Upshot for the conjecture.** Within the toy, induction-style trust is exactly where
+self-reproducing strings are *cheapest to plant* and *most transmissible*, and where the
+order/length penalties of count-based trust largely vanish. This is the bridge result that
+de-risks a real-transformer test, and it sharpens the defensive reading: the dangerous regime
+is induction/longest-match reliance on repeated spans, not count accumulation.
+
 ## Write-up
 
 A standalone article covering this whole program lives at
