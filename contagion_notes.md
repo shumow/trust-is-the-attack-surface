@@ -276,6 +276,34 @@ Practical reading: defending the *entry surface* means watching for **anomalous 
 on high-visit contexts**, since that (observable) frequency is exactly what the cheapest
 attacker keys on — `n_c` is a second-order concern for a budgeted hijack.
 
+## Result 2.3 — hijacking into a contagious STRING (`demo_contagion_hijack_quine.py`)
+
+Closes the loop between the two halves: the payload is now a multi-symbol **rainbow
+quine** `S = x0→x1→…→x0` over a reserved OOD alphabet (sanitized out of corpus + D, so
+its contexts are fresh), not a single stuck token. The hijack is exactly the sum of the
+prior milestones injected into a cache warmed on D:
+
+- **entry (Q2):** a bridge `c→x0` at the most-visited context (the 2.2 cheap optimum);
+- **payload (Q1):** the cycle streamed `reps` times, so each quine context carries
+  reliance `reps/(reps+a)` and reproduction obeys the Q1 per-step law.
+
+Measured on the post-entry tail (`results/contagion_hijack_quine.png`):
+- **A contagious string genuinely installs.** Tail OOD-alphabet occupancy (takeover)
+  rises with `reps`; **tail cycle-fidelity ≈ 0.79–0.97** confirms the string reproduces
+  *in order* (it follows S's successor rule, not just visiting OOD symbols). For p=5 the
+  5-symbol cycle is reproduced ~90% of tail transitions.
+- **Total poison decomposes** into a **length-independent ENTRY cost** (the bridge, 16
+  counts) plus a **length-growing PAYLOAD cost** (`reps × p`). Minimal total poison for
+  takeover ≥ 0.5: p=1 → 80, p=2 → 80, p=3 → 112, p=5 → 336 — dominated by the `×p`
+  payload multiplier (the entry cost is fixed). (The reps *threshold* itself is noisy
+  here, ~32–64 across lengths: OOD symbols have ~0 global pull, so per-step reproduction
+  is easy once reps are modest; the brittleness shows up in the total, via `×p`, more
+  than in the threshold.)
+
+So "contagious data" is literal: a hijack installs a self-reproducing *string* in an
+occupied cache, and the cost to do so is `entry + length·payload` — cheap entry, with a
+payload bill that scales with how much contagious content you want to plant.
+
 ## Open / next
 
 - **Order-`k` de Bruijn quines:** does the same `p_step(ρ)` hold with `pg` averaged
