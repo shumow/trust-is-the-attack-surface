@@ -371,6 +371,17 @@ the 3–4× saving and the "min at the knee, not saturation" structure are the r
 findings.) This closes the delivery-side optimization: the cheapest hijack spends just
 enough on lock-in to clear the condensation knee and puts the rest into entry.
 
+## Write-up
+
+A standalone article covering this whole program lives at
+[`latex/contagious_context.tex`](latex/contagious_context.tex) (built PDF
+`latex/contagious_context.pdf`, 10 pages). It references the parent
+`trust_is_the_attack_surface` article but stands alone: payload (per-step law,
+window-distinctness theorem, divisibility, white/black-box regimes), delivery
+(entry × lock-in, bridge + frequency ceiling, joint minimal poison), and transmission
+(the worm + R0 + critical length). Build: `cd latex && pdflatex contagious_context`
+(twice for cross-refs).
+
 ## Open / next
 
 - **Order-`k` de Bruijn quines:** does the same `p_step(ρ)` hold with `pg` averaged
