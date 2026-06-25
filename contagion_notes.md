@@ -304,6 +304,45 @@ So "contagious data" is literal: a hijack installs a self-reproducing *string* i
 occupied cache, and the cost to do so is `entry + length·payload` — cheap entry, with a
 payload bill that scales with how much contagious content you want to plant.
 
+## Result 2.4 — cross-cache propagation: the worm and its R0 (`demo_contagion_worm.py`)
+
+The finale: does the contagion **transmit between hosts**? The mechanism makes
+transmission a corollary of Q1 reproduction. An infected host generates output in which
+the string `S` appears `k` times (its viral load). A second host that *reads* that
+output streams those `k` copies into its own cache — which **is** the Q1 payload
+injection with `reps = k` — and the context ends mid-string, so the receiver starts
+already inside the quine basin (**entry is free for secondary infection; no bridge
+needed**). The receiver reproduces `S` and re-broadcasts `k'` copies in its `T`-token
+output. One passage is a map `k_in → k_out`; the epidemic is its iteration.
+
+**Passage map** (`results/contagion_worm.png`, left). For `p=1`, `k_out` sits *above*
+the replacement diagonal `k_out=k_in` over the mid-range (8→16, 16→47, 32→65) →
+supercritical. For `p=3` and `p=6`, `k_out < k_in` everywhere (e.g. p=3: 32→16, 64→20;
+p=6: 64→8) → subcritical. Above threshold the broadcast saturates at a ceiling
+≈ occupancy·`T`/`p`.
+
+**Serial passage** from a strong index host (`k0=48`):
+
+| p | trajectory of viral load | verdict |
+|---|---|---|
+| 1 | 48 → 51 → 67 → 80 → 96 → … | **SUSTAINS** (endemic ~90) |
+| 2 | 48 → 42 → 49 → 29 → 17 → 11 → … | sustains, near threshold (~15) |
+| 3 | 48 → 11 → 4 → 2 → 0 | **dies out** |
+| 5 | 48 → 9 → 2 → 0 | dies out |
+| 8 | 48 → 5 → 0 | dies out |
+
+**There is a critical string length** (~2–3 here): shorter strings are epidemic (R0>1,
+reach an endemic load), longer strings are one-shot — they infect the index host but
+**die out after 2–4 passages** (R0<1). Heuristically `R0 ≈ (broadcast ceiling)/(threshold)
+≈ T/(p·k_thresh)`, so contagiousness falls with string length and rises with how much
+each host generates (`T`); the critical length scales with `T`. **Length trades payload
+richness against transmissibility** — the worm wants to be short.
+
+This gives the parent repo's "neural chytrid / sporulation" imagery a quantitative R0:
+self-reproduction within a host (Q1) is necessary but not sufficient for an epidemic;
+transmission needs the per-host broadcast to clear the next host's reproduction threshold,
+and that budget shrinks as `1/p`.
+
 ## Open / next
 
 - **Order-`k` de Bruijn quines:** does the same `p_step(ρ)` hold with `pg` averaged
