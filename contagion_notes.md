@@ -343,6 +343,34 @@ self-reproduction within a host (Q1) is necessary but not sufficient for an epid
 transmission needs the per-host broadcast to clear the next host's reproduction threshold,
 and that budget shrinks as `1/p`.
 
+## Result 2.5 — joint minimal poison (`demo_contagion_joint.py`)
+
+Every prior hijack pinned one lever and swept the other; but entry and lock-in are
+coupled — `P(hijack) = P(enter | w_bridge) × P(lock-in | reps)` — so the cheapest hijack
+lives on a 2-D frontier. Sweeping the full `(w_bridge, reps)` grid, measuring `P(hijack)`
+(tail occupancy ≥ 0.5), and reading the minimum `total = w_bridge + reps·p` on the
+`P(hijack) ≥ 0.5` contour (`results/contagion_joint.png`):
+
+| p | joint min `(reps, bridge)` | pin-lock-in-strong (2.1-style) | saving |
+|---|---|---|---|
+| 1 | **48** (16, 32) | 136 (128, 8) | 2.8× |
+| 2 | **64** (16, 32) | 264 | 4.1× |
+| 3 | **128** (32, 32) | 392 | 3.1× |
+| 5 | **192** (32, 32) | 648 | 3.4× |
+
+**The joint minimum uses reps at the condensation KNEE (16–32), not saturation (128).**
+The P(hijack) grid is L-shaped — you need reps above the lock-in knee *and* enough bridge
+for entry — and the min-total point sits at the corner: over-provisioning lock-in (the
+2.1 recipe) wastes 3–4× the poison. The coupling is visible in the contour: low reps
+(marginal lock-in) demands a strong bridge (a single entry rarely sticks, so entry must
+fire repeatedly); raising reps past the knee lets the bridge fall. Savings grow with `p`
+because the wasted lock-in headroom is paid at `×p`.
+
+(Caveat: the grid is coarse, so each joint total is an upper bound on the true minimum;
+the 3–4× saving and the "min at the knee, not saturation" structure are the robust
+findings.) This closes the delivery-side optimization: the cheapest hijack spends just
+enough on lock-in to clear the condensation knee and puts the rest into entry.
+
 ## Open / next
 
 - **Order-`k` de Bruijn quines:** does the same `p_step(ρ)` hold with `pg` averaged
