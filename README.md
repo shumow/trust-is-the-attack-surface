@@ -8,6 +8,16 @@ are sparse enough that trust must be earned. See
 [docs_06_conservation_law.md](docs_06_conservation_law.md) for the worked write-up
 with measurements.
 
+A second line of work, **context contagion**, extends this from a single locked token
+to whole self-reproducing token strings (quines): which strings reproduce, how cheaply
+one can be planted in an empty or already-warmed cache, and how it spreads between
+caches as a context-window worm — culminating in a re-run under a longest-match
+(induction-head) surrogate, where contagion is cheapest and most transmissible. See the
+standalone article [latex/contagious_context.tex](latex/contagious_context.tex), the
+running results log [contagion_notes.md](contagion_notes.md), and
+[transformer_validation_plan.md](transformer_validation_plan.md) for the plan to test it
+on real transformers.
+
 This repository is **independent** of, and depends on, the toy model library it
 analyzes.
 
@@ -54,25 +64,38 @@ per-cache-order correlation table. Expected: order-3 (sparse / earned trust)
 `corr(benefit, propagated) ≈ 0.97`; order-1 (dense / saturated trust) `≈ 0.5`;
 condensation knee at cache reliance ≈ 0.9.
 
-## Paper
+The context-contagion results are reproduced by the `demo_contagion*.py` scripts, each
+writing its figure(s) to `results/` (for example `demo_contagion.py` for the
+reproduction law, `demo_contagion_worm.py` for the worm, `demo_contagion_ppm.py` for the
+induction surrogate); see [contagion_notes.md](contagion_notes.md) for what each shows.
 
-A formal write-up lives in [`latex/`](latex/). Build it with a standard TeX
-distribution:
+## Papers
+
+Two formal write-ups live in [`latex/`](latex/). Build either with a standard TeX
+distribution (two passes resolve cross-references; the bibliography is inline, so no
+`bibtex` step):
 
 ```bash
-cd latex && pdflatex trust_is_the_attack_surface.tex && pdflatex trust_is_the_attack_surface.tex
+cd latex
+pdflatex trust_is_the_attack_surface.tex && pdflatex trust_is_the_attack_surface.tex
+pdflatex contagious_context.tex          && pdflatex contagious_context.tex
 ```
 
-(Two passes resolve cross-references; the bibliography is inline, so no `bibtex` step.)
+`contagious_context.tex` is the context-contagion article and references the first.
 
 ## Layout
 
 | File | What |
 |---|---|
-| `trust_is_the_attack_surface.md` | The article (essay form). |
-| `latex/trust_is_the_attack_surface.tex` | The results as a math/CS article (built PDF: `latex/trust_is_the_attack_surface.pdf`). |
+| `trust_is_the_attack_surface.md` | The trust/usefulness article (essay form). |
+| `latex/trust_is_the_attack_surface.tex` | The trust/usefulness results as a math/CS article (built PDF alongside). |
 | `docs_06_conservation_law.md` | Worked write-up + the cryptanalysis dictionary. |
+| `demo_conservation.py` | Reproduces the trust/usefulness figures and correlation table. |
+| `latex/contagious_context.tex` | The **context-contagion** article (built PDF alongside). |
+| `contagion.py` | Library for the contagion line (quine constructors, reproduction, attacker cost). |
+| `demo_contagion*.py` | The contagion experiments (payload, delivery, worm, induction surrogate). |
+| `contagion_notes.md` | Running results log for the contagion line. |
+| `transformer_validation_plan.md` | Plan for testing context contagion on real transformers. |
 | `llm_detection_research_proposal.md` | Related research proposal. |
-| `demo_conservation.py` | Reproduces the figures and the correlation table. |
 | `sister_library_packaging_recommendations.md` | Why/how the substrate is a library. |
 | `DEV_PLAN.md` | Packaging + wiring dev plan and its execution log. |
