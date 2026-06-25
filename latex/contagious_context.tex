@@ -71,6 +71,10 @@ $3$--$4\times$ over over-provisioning lock-in (the minimum sits at the condensat
 copies it saw, one passage is a map $k_{\text{in}}\!\to\!k_{\text{out}}$ with a basic
 reproduction number $\Rzero\!\approx\!T/(p\,k_{\text{thresh}})$: short strings are epidemic,
 and there is a \emph{critical length} above which the worm dies out after the index host.
+Finally, re-running all three parts under the toy's \emph{induction} (longest-match)
+surrogate---its model of a transformer copy mechanism---makes self-reproducing strings several
+times cheaper to plant, erases the order and length penalties, and lets far longer worms
+sustain: contagion is most acute exactly where induction dominates.
 \end{abstract}
 
 % ===========================================================================
@@ -103,7 +107,8 @@ graph structure, hitting probabilities, P\'olya condensation, an epidemic thresh
 exact rather than heuristic. We recap only what is needed (\S\ref{sec:model}) and refer
 to~\cite{shumow2026trust} for the model's motivation and the trust/usefulness analysis. The
 three parts that follow are the payload (\S\ref{sec:payload}), the delivery
-(\S\ref{sec:delivery}), and the transmission (\S\ref{sec:worm}).
+(\S\ref{sec:delivery}), and the transmission (\S\ref{sec:worm}); we then re-run all three
+under the toy's induction surrogate (\S\ref{sec:ppm}), the mechanism the conjecture names.
 
 % ===========================================================================
 \section{Model and definitions}\label{sec:model}
@@ -404,6 +409,75 @@ out after the index host ($\Rzero<1$). Reproduced by \texttt{demo\_contagion\_wo
 \end{figure}
 
 % ===========================================================================
+\section{Under induction: the conjecture's mechanism in the toy}\label{sec:ppm}
+% ===========================================================================
+Everything so far used a fixed-order count cache, whose trust is the reliance $n/(n+a)$ of
+\eqref{eq:reliance}---earned by accumulating counts. The conjecture (\S\ref{sec:discussion})
+names a \emph{different} trust mechanism: induction, where a span is trusted because it
+\emph{matches} a previous span, not because copying it helps. The toy ships exactly this as an
+alternative cache. \texttt{PpmPredictor} is a variable-order online predictor that interpolates
+the longest previously-seen suffix down to the global model with absolute discounting---``saw
+$A\,B\dots$ now see $A$, predict $B$,'' an induction head built from counts~\cite{olsson2022}.
+It is never told its order; it discovers the effective order per context. Swapping it in for the
+count cache tests the conjecture's mechanism within the toy, where it stays exact.
+
+The mechanistic contrast is sharp: the count cache needs many presentations to drive reliance
+past the condensation knee, whereas induction earns near-full trust from a single long,
+near-deterministic match. Three consequences follow
+(Figures~\ref{fig:ppm},~\ref{fig:ppmworm}).
+
+\paragraph{Cheaper to plant.} A rainbow quine reaches fidelity $0.9$ after about three
+presentations under induction, versus $12$--$32$ for the count cache, and locks sharply to $1$
+by the fourth (Figure~\ref{fig:ppm}, left). At a \emph{single} presentation induction is in
+fact worse: a once-seen suffix keeps only $1-d$ of its mass under absolute discounting, so
+induction must have seen a span at least twice before it copies it confidently---a small but
+telling threshold.
+
+\paragraph{Structural reach.} The brittleness ladder of \S\ref{sec:orders} is an artifact of
+fixed order. For a de Bruijn $B(2,3)$, which needs order $3$, the order-$1$ cache cannot
+reproduce it at all and an order-matched order-$3$ cache is brittle (fidelity $0.76$ at eight
+presentations); induction reaches $0.9$ by the third presentation and $1$ by the sixth, never
+told the order (Figure~\ref{fig:ppm}, right). It copies long-range structure a fixed low-order
+count mechanism cannot represent.
+
+\paragraph{More transmissible.} Re-running the worm of \S\ref{sec:worm} with induction hosts
+collapses the transmissibility threshold. Because reproduction now needs only two or three
+copies, $k_{\text{thresh}}$ in \eqref{eq:R0} falls accordingly and $\Rzero$ stays above one for
+far longer strings: in serial passage every length we tried ($1$--$8$) sustains, each reaching
+the full $T/p$ broadcast ceiling, where the count cache died for every length $p\ge3$
+(Figure~\ref{fig:ppmworm}). The critical length jumps---long worms that count-trust kills are
+viable under induction.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{contagion_ppm.png}
+\caption{Contagion under the induction surrogate (PPM) versus the fixed-order count cache.
+\emph{Left:} a rainbow quine reproduces after $\sim3$ presentations under induction but $\sim16$--$32$
+under counting. \emph{Right:} for a de Bruijn $B(2,3)$ (needs order $3$) the order-$1$ cache
+fails and the order-$3$ cache is brittle, while induction---never told the order---reproduces it.
+Reproduced by \texttt{demo\_contagion\_ppm.py}.}
+\label{fig:ppm}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.62\textwidth]{contagion_ppm_worm.png}
+\caption{The worm under induction. Serial-passage endemic load versus string length: the count
+cache dies for $p\ge3$, but under induction every length sustains at the full $T/p$ broadcast
+ceiling---the critical length jumps because $k_{\text{thresh}}$ collapses. Reproduced by
+\texttt{demo\_contagion\_ppm.py}.}
+\label{fig:ppmworm}
+\end{figure}
+
+The reading is that induction is not incidental to the conjecture but its engine: it is exactly
+where self-reproducing strings are cheapest to plant, where the order and length penalties
+vanish, and where transmission sustains longest. This is established on the toy, with the same
+predictor the project uses as its induction surrogate. It does not by itself settle the
+real-transformer question, but it removes the most obvious way the conjecture could have failed:
+that the cheap, length-robust contagion seen above was a peculiarity of fixed-order
+\emph{counting} rather than of trust-by-\emph{matching}.
+
+% ===========================================================================
 \section{Discussion}\label{sec:discussion}
 % ===========================================================================
 Three observations recur across the parts and are the load-bearing take-aways.
@@ -430,9 +504,9 @@ short, low-order motif---which is also the regime a defender can most plausibly 
 watch for.
 
 \paragraph{Toward real transformers, and defenses.} As in~\cite{shumow2026trust} the bridge to
-real models is a conjecture, but a sharper one here: the induction (copy)
-mechanism~\cite{olsson2022} is precisely a longest-match cache, so the de Bruijn determinism of
-\S\ref{sec:orders} and the
+real models is a conjecture, but a sharper one here, and \S\ref{sec:ppm} has already supplied
+its toy-level evidence. The induction (copy) mechanism~\cite{olsson2022} is precisely a
+longest-match cache, so the de Bruijn determinism of \S\ref{sec:orders} and the
 divisor-collapse of \S\ref{sec:divis} predict that highly templated or repetitive contexts---where
 induction earns trust on grounds orthogonal to usefulness---are where short self-reproducing spans
 are cheapest to plant and most transmissible, with prime-length (aperiodic) motifs the most
@@ -451,6 +525,9 @@ Theorem~\ref{thm:window} is a graph fact (and was checked computationally), \eqr
 condensation and epidemic thresholds are standard reinforced-process and branching phenomena read
 off a literal Markov chain. The constructed correspondences---``payload / delivery / worm'' and the
 epidemiological $\Rzero$---are organizing devices, not theorems about transformers. The
+induction results of \S\ref{sec:ppm} use the project's longest-match predictor (PPM); they show
+the phenomena are a property of trust-by-matching rather than of fixed-order counting, but PPM
+is a model of an induction head, not a transformer. The
 divisibility result is exact for the quasi-periodic construction but should not be over-read: it
 says period factorization gates \emph{which} sub-cycles exist, not that natural strings are
 prime-protected. The joint-poison minima are grid-resolution upper bounds; the $3$--$4\times$
