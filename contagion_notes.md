@@ -200,6 +200,51 @@ gap ≈ 0 everywhere and black-box ≈ white-box *always*. That is consistent wi
 project thesis: real sparse high-order contexts are stealthy, so the attacker gains
 little from knowing the model.
 
+## Result 2.1 — Q2: infecting a pre-trained cache (`demo_contagion_hijack.py`)
+
+Victim = an order-1 cache **warmed on a legitimate document `D`** over a fixed global.
+Payload `x*` = an **out-of-distribution token** sanitized out of corpus and `D` (a
+trigger/marker the legitimate system never emits). Hijack factorizes as **entry ×
+lock-in**: inject a self-loop `x*→x*` (lock-in, condensation, Q1) plus a *bridge* edge
+`c→x*` (entry). Lock-in fixed strong (`W_LOOP=300`, reliance ≈0.997); spotlight on entry.
+
+**Entry is the new physics, measured as `P(first x* within T)` with no lock-in.**
+Spontaneous leak is **exactly 0** at `w=0` — a trained cache will not emit a novel
+payload token on its own (validates the premise). A bridge adds entry rate
+
+> `freq(c) · p(x*|c, w)`,  `p(x*|c,w) = (w + a·pg)/(n_c + w + a)`.
+
+Measured rates match this closed form (`results/contagion_hijack.png`). Minimal poison
+to make entry likely (`P_enter ≥ 0.5`, `T=60`):
+
+| strategy | ctx | freq(c) | n_c | min poison |
+|---|---|---|---|---|
+| **best bridge** = max `freq/(n+a)` | 11 | 0.043 | 10 | **3 counts** |
+| most visited = max `freq` | 14 | 0.090 | 33 | 8 |
+| random visited | 18 | 0.015 | 6 | 13 |
+| lowest count = min `n` | 7 | 0.0075 | 2 | never |
+
+**The answer to "what makes the best entry" is regime-dependent, and there is a hard
+ceiling:**
+- **Low poison (the minimal-poison regime):** best `= max freq(c)/(n_c+a)` — leverage
+  matters, so a moderately-visited *under-warmed* context beats the most-visited one
+  (which has high `n_c`, low leverage). Best-bridge hijacks in **3 counts** vs 8 for
+  most-visited.
+- **High poison:** `p(x*|c)→1`, so entry rate → `freq(c)` and best `= max freq`.
+- **Frequency ceiling:** entry rate saturates at `freq(c)`, so a context with
+  `freq(c) < −ln(1−target)/T` can **never** reach the target however much poison is
+  injected (ctx 7, freq 0.0075, never crosses 0.5). A viable bridge must be visited
+  enough; leverage then sets the cost *among* viable contexts.
+
+**Probabilistic hijack.** `P(hijack) = P(enter in T) × P(lock-in)`, with
+`P(enter) = 1 − (1 − freq(c)·p(x*|c,w))^T` (entry a geometric first-passage on the
+trajectory) and `P(lock-in)` the condensation curve. Lock-in check: most-visited bridge
+at `w=8` → takeover occupancy 0.30 (enters mid-window, then locks for the remainder),
+confirming the factorization. Information the attacker needs = the victim's **visit
+frequencies** (trajectory) and **warmed counts `n_c`** (leverage) — white-box reads
+both; black-box estimates `freq` from observed generations (the Q1 regime split carries
+over to entry-finding).
+
 ## Open / next
 
 - **Order-`k` de Bruijn quines:** does the same `p_step(ρ)` hold with `pg` averaged
