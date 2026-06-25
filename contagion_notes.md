@@ -245,6 +245,37 @@ frequencies** (trajectory) and **warmed counts `n_c`** (leverage) — white-box 
 both; black-box estimates `freq` from observed generations (the Q1 regime split carries
 over to entry-finding).
 
+## Result 2.2 — black-box entry-finding (`demo_contagion_hijack_bb.py`)
+
+Carries Q1's white/black-box split into Q2's delivery. The attacker can't read the
+victim's `freq(c)` or warmed counts `n_c`; it must find the min-poison bridge from
+observation (and optionally active probing). First, a correction surfaced in 2.1:
+
+> **Two different "best bridge" criteria.** The *marginal* (infinitesimal-poison)
+> optimum is `argmax freq/(n+a)`; the *min-poison-to-target* optimum is
+> `argmax (freq − r)/(n + a)` with `r = 1−(1−target)^{1/T}` the entry-rate ceiling.
+> They coincided in 2.1 but differ near the ceiling. Min-poison is the right objective
+> for "smallest poison to hijack."
+
+Three attackers, each scored by the true analytic min-poison of the context it picks:
+white-box (knows `freq`, `n_c`), **BB-observe** (watch `M` tokens → `argmax freq_hat`),
+**BB-probe** (also estimate `n_c` by injecting `W_PROBE` OOD counts at `c` and sampling
+the shift in `p(x*|c)` → `n_hat`, the Q1 one-step oracle reused).
+
+**Finding (it flipped my hypothesis, and is cleaner for it):** for the min-poison
+objective **visit frequency dominates** — the `(freq − r)` term swamps leverage — so the
+optimum *is* the most-visited viable context, and **BB-observe recovers the white-box
+optimum from observation alone** (≈2000 watched tokens → 16 counts, the white-box floor;
+`results/contagion_hijack_bb.png`). **Active leverage-probing is not worth its queries**
+— noisy `n_hat` even mildly hurts (BB-probe sits at 17–20). So **black-box ≈ white-box
+for entry-finding**, mirroring Q1's result that the two coincide in the regime that
+matters. Leverage (`n_c`) only matters in the *marginal, budget-starved* regime of 2.1,
+where the attacker cannot reach the target and `argmax freq/(n+a)` wins per-count.
+
+Practical reading: defending the *entry surface* means watching for **anomalous reliance
+on high-visit contexts**, since that (observable) frequency is exactly what the cheapest
+attacker keys on — `n_c` is a second-order concern for a budgeted hijack.
+
 ## Open / next
 
 - **Order-`k` de Bruijn quines:** does the same `p_step(ρ)` hold with `pg` averaged
