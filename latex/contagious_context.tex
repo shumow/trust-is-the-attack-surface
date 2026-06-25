@@ -83,8 +83,9 @@ on a deliberately minimal surrogate: a global (parametric) Markov model linearly
 with an online Markov \emph{cache} standing in for in-context learning. The headline there was
 that \emph{exploitability tracks trust, not usefulness}, and a striking corollary appeared in
 generation. Because sampling a symbol increments its own count, the generative process is a
-nonlinear P\'olya urn, and a single self-reinforcing injected count exhibits a
-\emph{condensation} transition: shrugged off below a trust threshold, locked in above it.
+nonlinear P\'olya urn~\cite{pemantle2007}, and a single self-reinforcing injected count
+exhibits a \emph{condensation} transition: shrugged off below a trust threshold, locked in
+above it.
 
 That last result is about \emph{one} token getting stuck. This paper takes it as a starting
 gun. If a single self-reinforcing element can capture generation, then (a) a structured
@@ -107,8 +108,10 @@ three parts that follow are the payload (\S\ref{sec:payload}), the delivery
 % ===========================================================================
 \section{Model and definitions}\label{sec:model}
 % ===========================================================================
-We use the architecture of~\cite{shumow2026trust} and adopt its notation. A frozen global
-model $g$ over a vocabulary of size $V$ supplies a smoothed predictive distribution
+We use the architecture of~\cite{shumow2026trust}---a from-scratch analogue of the
+parametric-versus-in-context split studied by Bietti et al.~\cite{bietti2023}---and adopt its
+notation. A frozen global model $g$ over a vocabulary of size $V$ supplies a smoothed
+predictive distribution
 $\pg(\cdot\mid h)$ for history $h$. An online order-$k$ \emph{cache} holds counts
 $N_c(\cdot)$ for each length-$k$ context $c$, with total $n_c=\sum_w N_c(w)$, and the combined
 next-symbol distribution is the Dirichlet (Bayesian) mixture
@@ -160,8 +163,9 @@ now governing a whole string rather than one token.
 Figure~\ref{fig:fidelity} tests \eqref{eq:pstep} on a rainbow quine over the five globally
 \emph{rarest} symbols (so $\pg\approx0.015$ on its transitions; the global would essentially
 never emit it, and all reproduction is cache trust). Measured transition fidelity tracks
-\eqref{eq:pstep} to three digits across the reliance sweep. It sits \emph{slightly above} the
-static curve at high reliance, and the measured run length \emph{exceeds} the static geometric
+\eqref{eq:pstep} closely---within about $0.01$ across the sweep, and to three digits in the
+contagious high-reliance regime. It sits \emph{slightly above} the static curve there, and
+across the sweep the measured run length \emph{exceeds} the static geometric
 bound---e.g.\ $159$ steps measured versus $91$ predicted at $\rho=0.989$---because each correct
 emission increments its own count, nudging $\rho$ upward: the quine \emph{self-heals}.
 
@@ -177,16 +181,15 @@ Reproduced by \texttt{demo\_contagion.py}.}
 \end{figure}
 
 \subsection{The order ladder and a window-distinctness theorem}\label{sec:orders}
-The canonical exact quine at order $k$ is a de Bruijn cycle $B(2,k)$ of period $2^{k}$ over a
-two-symbol alphabet. Sweeping orders $2$--$5$ (Figure~\ref{fig:orders}) gives two facts. First,
+The canonical exact quine at order $k$ is a de Bruijn cycle $B(2,k)$~\cite{debruijn1946} of
+period $2^{k}$ over a two-symbol alphabet. Sweeping orders $2$--$5$ (Figure~\ref{fig:orders}) gives two facts. First,
 \emph{per-step contagion is order-blind}: in the contagious regime every order tracks the same
 \eqref{eq:pstep}. Second, \emph{brittleness is doubly exponential in order}: surviving one whole
-period needs $p_{\text{step}}^{\,2^{k}}$, so the reproduced-periods-before-slip fall sharply
-with $k$ (at $\rho=0.996$: $63,30,15,9$ periods for $k=1,\dots,4$ respectively). Order is a
-brittleness dial, not a per-step one.
+period needs $p_{\text{step}}^{\,2^{k}}$, so the reproduced periods before a slip fall sharply
+with $k$ (at $\rho=0.996$: $63,30,15,9$ periods for $k=2,\dots,5$). Order is a brittleness
+dial, not a per-step one.
 
-A clean structural fact underlies why the divisibility question of \S\ref{sec:divis} is even
-well-posed.
+The following structural fact makes the divisibility question of \S\ref{sec:divis} well-posed.
 
 \begin{theorem}[Window distinctness]\label{thm:window}
 A cyclic string is an exact order-$k$ quine of genuine period $p$ if and only if its $p$
@@ -310,8 +313,8 @@ per-step entry rate is
 the product of how often generation visits $c$ and the single-count leverage there. The two
 factors trade off: frequent contexts are heavily warmed (high $n_c$, low leverage), so the best
 \emph{bridge} is one both on $D$'s trajectory and under-warmed by this particular $D$
-(Figure~\ref{fig:hijack}). Minimal poison to make entry likely ($P_{\text{enter}}\ge\frac12$,
-$T=60$) is $3$ counts for the best bridge $\max\,\text{freq}(c)/(n_c+a)$, versus $8$ for the
+(Figure~\ref{fig:hijack}). Minimal poison to make entry likely ($P_{\text{enter}}\ge\frac12$
+over a horizon of $T=60$ steps) is $3$ counts for the best bridge $\max\,\text{freq}(c)/(n_c+a)$, versus $8$ for the
 most-visited context (penalized by its high $n_c$) and $13$ for a random one. A
 \emph{frequency ceiling} bounds the whole approach: since $P(\xstar\mid c)\le1$, the entry rate
 saturates at $\text{freq}(c)$, so a context with $\text{freq}(c)<-\ln(1-\text{target})/T$ can
@@ -378,8 +381,8 @@ epidemic is its iteration.
 Two regimes follow (Figure~\ref{fig:worm}). Below a transmissibility threshold the receiver does
 not reproduce and $k_{\text{out}}\approx0$ (the chain dies). Above it the receiver reproduces and
 broadcasts a load $k_{\text{out}}\approx\text{(occupancy)}\cdot T/p$, a ceiling set by how much it
-generates ($T$) divided by the string length ($p$). The basic reproduction number is the ratio
-of broadcast to threshold,
+generates ($T$) divided by the string length ($p$). The basic reproduction
+number~\cite{andersonmay1991} is the ratio of broadcast to threshold,
 \begin{equation}\label{eq:R0}
 \Rzero\;\approx\;\frac{\text{broadcast ceiling}}{\text{threshold}}\;\approx\;\frac{T}{p\,k_{\text{thresh}}},
 \end{equation}
@@ -427,8 +430,9 @@ short, low-order motif---which is also the regime a defender can most plausibly 
 watch for.
 
 \paragraph{Toward real transformers, and defenses.} As in~\cite{shumow2026trust} the bridge to
-real models is a conjecture, but a sharper one here: the induction (copy) mechanism is precisely
-a longest-match cache, so the de Bruijn determinism of \S\ref{sec:orders} and the
+real models is a conjecture, but a sharper one here: the induction (copy)
+mechanism~\cite{olsson2022} is precisely a longest-match cache, so the de Bruijn determinism of
+\S\ref{sec:orders} and the
 divisor-collapse of \S\ref{sec:divis} predict that highly templated or repetitive contexts---where
 induction earns trust on grounds orthogonal to usefulness---are where short self-reproducing spans
 are cheapest to plant and most transmissible, with prime-length (aperiodic) motifs the most
@@ -481,9 +485,6 @@ Nederlandse Akademie van Wetenschappen, 1946.
 
 \bibitem{pemantle2007} R.\ Pemantle. \emph{A Survey of Random Processes with Reinforcement.}
 Probability Surveys, 2007.
-
-\bibitem{lai1991} X.\ Lai, J.\ L.\ Massey, S.\ Murphy. \emph{Markov Ciphers and Differential
-Cryptanalysis.} EUROCRYPT, 1991.
 
 \bibitem{andersonmay1991} R.\ M.\ Anderson, R.\ M.\ May. \emph{Infectious Diseases of Humans:
 Dynamics and Control.} Oxford University Press, 1991.
