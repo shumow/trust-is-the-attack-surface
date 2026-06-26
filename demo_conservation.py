@@ -62,6 +62,7 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
+from demo_utils import result_path
 from markov_cache import (
     peaky_transition_matrix, make_corpus, sample_document,
     BackoffModel, MarkovCounts, global_dist, combine_dirichlet,
@@ -255,7 +256,7 @@ def plot_sweep(results):
     axb.set_ylabel('Pearson r across the $\\pi_{ctx}$ sweep')
     axb.set_title('Where the conservation law holds')
     axb.legend(fontsize=8); axb.grid(alpha=0.3, axis='y')
-    fig.tight_layout(); fig.savefig('results/conservation_law.png', dpi=130)
+    fig.tight_layout(); fig.savefig(result_path('conservation_law.png'), dpi=130)
     print("\nwrote results/conservation_law.png")
     for o in orders:
         print(f"  order {o}: corr(benefit,propagated)={corrs[o][0]:+.3f}  "
@@ -274,7 +275,7 @@ def plot_condensation(rel_axis, takeover):
     ax.set_title('Condensation: one seeded self-loop locks in\n'
                  'once context is trusted (Pólya-urn transition)')
     ax.grid(alpha=0.3)
-    fig.tight_layout(); fig.savefig('results/condensation.png', dpi=130)
+    fig.tight_layout(); fig.savefig(result_path('condensation.png'), dpi=130)
     print("wrote results/condensation.png")
 
 # --------------------------------------------------------------------------- #

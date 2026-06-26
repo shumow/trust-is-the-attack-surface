@@ -144,12 +144,12 @@ knee, the sporulation event made quantitative.
 
 Behavioral fever is escape ↑ / `λ` ↓ / `α` ↑ — each caps the single-count leverage
 `1/(n+a)` and lowers trust, pulling the generation dynamics back below the
-condensation knee. The repo's held-out PPM-escape self-tuning (`demo_ppm_tuned.py`,
-"safe-by-default across regimes") is exactly this immune response; the lens just
-gives it a target: **keep worst-case single-count leverage below the condensation
-threshold.** The cost is the conservation law's other face — leverage you deny the
-parasite is retrieval precision you deny the model. The two sweeps here are the two
-ends of that trade.
+condensation knee. The substrate library exposes PPM escape tuning, but this repo
+does not yet contain a full defensive tuning demo. The measured target is still
+clear: **keep worst-case single-count leverage below the condensation threshold.**
+The cost is the conservation law's other face — leverage you deny the parasite is
+retrieval precision you deny the model. The two sweeps here are the two ends of
+that trade.
 
 The sharper, measured statement: the dangerous quantity is **trust, not
 usefulness**, and the order-1 result shows the two can be driven apart — so a
@@ -168,11 +168,10 @@ maximally poisonable) while contributing nothing.
   chytrid is a constructed correspondence, not a citable published result.
 - The naive conservation law was **refuted** by its own experiment and replaced by
   the conditional version above. The figures are the evidence; the slogan was wrong.
-- Everything is on the synthetic two-layer source. The claim that the order-3
-  (earned-trust) regime is the one real high-order/natural-language contexts inhabit
-  is motivated by the repo's own real-text reliance (~0.01) but is an analogy across
-  architectures, not a measurement on text. Re-running these curves through
-  `text_adapter.py` on a real corpus is the obvious next step.
+- The central conservation result is on the synthetic two-layer source. The repo now
+  includes `demo_real_text_cache.py`, a small sample-prose calibration through the
+  same toy substrate. That is a useful sparsity sanity check, not a transformer
+  measurement and not a substitute for the real-model validation plan.
 
 *Reproduce:* `python3 demo_conservation.py` → `results/conservation_law.png`,
 `results/condensation.png`, and the printed per-order correlation table.

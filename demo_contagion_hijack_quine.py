@@ -26,6 +26,7 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
+from demo_utils import result_path
 from markov_cache import (peaky_transition_matrix, make_corpus, sample_document,
                           BackoffModel, global_dist, generate)
 import contagion as C
@@ -163,7 +164,7 @@ def plot(curves, min_total):
     ax2.set_title('Total poison = length-independent ENTRY\n+ length-growing PAYLOAD')
     ax2.set_xticks(ps); ax2.legend(fontsize=8, loc='upper left'); ax2.grid(alpha=0.3, axis='y')
 
-    fig.tight_layout(); fig.savefig('results/contagion_hijack_quine.png', dpi=130)
+    fig.tight_layout(); fig.savefig(result_path('contagion_hijack_quine.png'), dpi=130)
     print("wrote results/contagion_hijack_quine.png")
 
 

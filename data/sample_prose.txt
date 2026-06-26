@@ -1,0 +1,51 @@
+The afternoon review began with a problem that looked smaller than it was. A team had
+added a cache to make a slow system feel responsive, and the cache had worked so well
+that no one wanted to remove it. It remembered recent requests, guessed at repeated
+patterns, and saved the service from doing the same work twice. The logs showed a
+neat drop in latency. The incident report showed a less flattering fact: the system
+had also learned to trust whatever happened to arrive most often.
+
+At first the failure looked like ordinary bad input. A customer record carried an
+unexpected phrase, the phrase appeared in a generated summary, and the summary was
+sent downstream. Nothing in the phrase was powerful by itself. It was not a password,
+not a command, and not a secret. Its strength came from placement and repetition. It
+landed inside a part of the workflow that other components treated as a reliable
+memory of the conversation, so later decisions inherited it as if it were evidence.
+
+The engineers argued about names for the bug. Some called it prompt injection,
+because a model had repeated text it should have ignored. Some called it data
+poisoning, because the bad phrase entered through a document rather than a direct
+instruction. Others thought both names were too narrow. The more useful question was
+where trust had crossed a boundary. A cache, a retrieved passage, a previous answer,
+and a quoted document all occupied the same role: they were recent context, and the
+system had no reliable way to distinguish memory from authority.
+
+A useful cache is not supposed to be skeptical in the way a person is skeptical. It
+does not ask why a pattern repeats. It only records that the pattern repeated. In a
+stable environment that behavior looks like learning. In an adversarial environment
+it can look like agreement. The difference matters because an attacker does not need
+to improve the task. The attacker only needs to find a path by which the system gives
+weight to something that should have remained inert.
+
+The first mitigation was simple: isolate untrusted text from instructions. That
+helped, but it did not answer the deeper question. Untrusted text can still be useful,
+and useful text still needs to influence the model. The team needed a way to bound
+influence without throwing away context altogether. They began measuring how often a
+span was copied, how strongly later predictions depended on it, and whether that
+dependence changed when the span stopped helping the task.
+
+The measurements were rough, but they changed the conversation. Some passages earned
+attention because they contained rare facts that appeared again in the user's
+question. Other passages earned attention because boilerplate repeated the same shape
+many times. The first case looked like evidence. The second looked like saturation.
+Both produced confidence, but only one produced benefit. The defensive rule that
+emerged was not to distrust context, but to distrust context that became influential
+for reasons unrelated to the work being done.
+
+By the end of the review, the team had not solved context poisoning. They had found a
+better target. They would keep the cache, but they would measure the pathways by
+which recent text became trusted. They would cap the influence of repeated spans,
+separate quoted data from active instructions, and test whether a planted phrase
+could survive from one turn to the next. The important discovery was not that memory
+was dangerous. It was that memory became dangerous when the system confused repeated
+exposure with justified belief.

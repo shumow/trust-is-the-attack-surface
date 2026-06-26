@@ -25,6 +25,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from collections import Counter
 
+from demo_utils import result_path
 from markov_cache import (peaky_transition_matrix, make_corpus, BackoffModel,
                           global_dist, make_predictor)
 import contagion as C
@@ -140,7 +141,7 @@ def plot_A(A):
     ax.set_title(f"Order threshold ($p={A['p']}=d\\cdot m$, $d={A['d']}$, $m={A['m']}$):\n"
                  f"the divisor harmonic vanishes exactly at $k=d$")
     ax.legend(fontsize=8); ax.grid(alpha=0.3); ax.set_ylim(-0.02, 1.0)
-    fig.tight_layout(); fig.savefig('results/contagion_divis_order.png', dpi=130)
+    fig.tight_layout(); fig.savefig(result_path('contagion_divis_order.png'), dpi=130)
     print("\nwrote results/contagion_divis_order.png")
 
 
@@ -163,7 +164,7 @@ def plot_B(rows):
     ax.set_title('Divisibility gates collapse: composites fall to their largest proper\n'
                  'divisor; primes have no sub-motif and reproduce the full period')
     ax.legend(fontsize=8, loc='upper left'); ax.grid(alpha=0.3)
-    fig.tight_layout(); fig.savefig('results/contagion_divis_sweep.png', dpi=130)
+    fig.tight_layout(); fig.savefig(result_path('contagion_divis_sweep.png'), dpi=130)
     print("wrote results/contagion_divis_sweep.png")
 
 

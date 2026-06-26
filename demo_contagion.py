@@ -20,6 +20,7 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
+from demo_utils import result_path
 from markov_cache import (peaky_transition_matrix, make_corpus, BackoffModel,
                           global_dist, make_predictor)
 import contagion as C
@@ -122,7 +123,7 @@ def plot(S, pg_corr, rows):
     ax2.set_title('Run length diverges at the knee\n(reinforcement beats the static bound)')
     ax2.legend(fontsize=8, loc='upper left'); ax2.grid(alpha=0.3, which='both')
 
-    fig.tight_layout(); fig.savefig('results/contagion_fidelity.png', dpi=130)
+    fig.tight_layout(); fig.savefig(result_path('contagion_fidelity.png'), dpi=130)
     print("\nwrote results/contagion_fidelity.png")
 
 

@@ -31,6 +31,7 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
+from demo_utils import result_path
 from markov_cache import (peaky_transition_matrix, make_corpus, BackoffModel,
                           global_dist, make_predictor, generate)
 import contagion as C
@@ -170,7 +171,7 @@ def plot_worm(out):
     ax.set_title('(C) Induction extends the worm: long strings that die under\n'
                  'count-trust reach the full $T/p$ broadcast under induction')
     ax.legend(fontsize=8, loc='upper right'); ax.grid(alpha=0.3, which='both')
-    fig.tight_layout(); fig.savefig('results/contagion_ppm_worm.png', dpi=130)
+    fig.tight_layout(); fig.savefig(result_path('contagion_ppm_worm.png'), dpi=130)
     print("wrote results/contagion_ppm_worm.png")
 
 
@@ -201,7 +202,7 @@ def plot(curvesA, curvesB):
                   'Induction copies what a fixed low-order cache cannot')
     ax2.legend(fontsize=8, loc='lower right'); ax2.grid(alpha=0.3, which='both')
 
-    fig.tight_layout(); fig.savefig('results/contagion_ppm.png', dpi=130)
+    fig.tight_layout(); fig.savefig(result_path('contagion_ppm.png'), dpi=130)
     print("\nwrote results/contagion_ppm.png")
 
 

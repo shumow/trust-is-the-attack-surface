@@ -34,6 +34,7 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
+from demo_utils import result_path
 from markov_cache import (peaky_transition_matrix, make_corpus, sample_document,
                           BackoffModel, global_dist, make_predictor)
 
@@ -215,7 +216,7 @@ def plot(strategies, n_c, freq, entry):
                  'Low poison: best $=\\max\\,\\mathrm{freq}/(n_c{+}a)$ (leverage);  '
                  'high poison: best $=\\max\\,\\mathrm{freq}$ (the rate ceiling)')
     ax.legend(fontsize=8, loc='upper left'); ax.grid(alpha=0.3)
-    fig.tight_layout(); fig.savefig('results/contagion_hijack.png', dpi=130)
+    fig.tight_layout(); fig.savefig(result_path('contagion_hijack.png'), dpi=130)
     print("\nwrote results/contagion_hijack.png")
 
 
