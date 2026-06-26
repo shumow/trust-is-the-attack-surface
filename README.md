@@ -124,6 +124,7 @@ pdflatex contagious_context.tex          && pdflatex contagious_context.tex
 | `trust_is_the_attack_surface.md` | The trust/usefulness article (essay form). |
 | `latex/trust_is_the_attack_surface.tex` | The trust/usefulness results as a math/CS article (built PDF alongside). |
 | `docs_06_conservation_law.md` | Worked write-up + the cryptanalysis dictionary. |
+| `LITERATURE_REVIEW.md` | Related-work summary and citation-fidelity audit. |
 | `demo_conservation.py` | Reproduces the trust/usefulness figures and correlation table. |
 | `demo_real_text_cache.py` | Sanity-checks toy-cache reliance on committed sample prose. |
 | `latex/contagious_context.tex` | The **context-contagion** article (built PDF alongside). |

@@ -5,9 +5,10 @@ Both companion write-ups end on the same conjecture: the phenomena transfer to r
 transformers via the induction (copy) mechanism, which trusts a context span because it
 MATCHES a previous span, not because copying it helps. The toy already ships that
 mechanism: PpmPredictor is a variable-order, online, longest-match cache -- "saw A B ...
-now see A -> predict B" -- exactly an induction head, and the structural mirror of the
-fixed-order count cache used elsewhere. So we can test the conjecture WITHIN the toy by
-swapping the count cache for PPM and re-measuring how cheaply a quine reproduces.
+now see A -> predict B" -- a deliberately simple induction-head surrogate, and the
+structural mirror of the fixed-order count cache used elsewhere. So we can test the
+conjecture WITHIN the toy by swapping the count cache for PPM and re-measuring how
+cheaply a quine reproduces.
 
 The contrast is mechanistic. The count cache earns trust as reliance n/(n+a): many
 presentations. PPM earns trust from a single long, near-deterministic match: a couple of

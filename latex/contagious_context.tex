@@ -414,10 +414,10 @@ out after the index host ($\Rzero<1$). Reproduced by \texttt{demo\_contagion\_wo
 Everything so far used a fixed-order count cache, whose trust is the reliance $n/(n+a)$ of
 \eqref{eq:reliance}---earned by accumulating counts. The conjecture (\S\ref{sec:discussion})
 names a \emph{different} trust mechanism: induction, where a span is trusted because it
-\emph{matches} a previous span, not because copying it helps. The toy ships exactly this as an
-alternative cache. \texttt{PpmPredictor} is a variable-order online predictor that interpolates
+\emph{matches} a previous span, not because copying it helps. The toy ships a deliberately
+simple surrogate for this as an alternative cache. \texttt{PpmPredictor} is a variable-order online predictor that interpolates
 the longest previously-seen suffix down to the global model with absolute discounting---``saw
-$A\,B\dots$ now see $A$, predict $B$,'' an induction head built from counts~\cite{olsson2022}.
+$A\,B\dots$ now see $A$, predict $B$,'' echoing the copy pattern studied for induction heads~\cite{olsson2022}.
 It is never told its order; it discovers the effective order per context. Swapping it in for the
 count cache tests the conjecture's mechanism within the toy, where it stays exact.
 
@@ -505,7 +505,7 @@ watch for.
 
 \paragraph{Toward real transformers, and defenses.} As in~\cite{shumow2026trust} the bridge to
 real models is a conjecture, but a sharper one here, and \S\ref{sec:ppm} has already supplied
-its toy-level evidence. The induction (copy) mechanism~\cite{olsson2022} is precisely a
+its toy-level evidence. The induction (copy) mechanism~\cite{olsson2022} is modeled here by a
 longest-match cache, so the de Bruijn determinism of \S\ref{sec:orders} and the
 divisor-collapse of \S\ref{sec:divis} predict that highly templated or repetitive contexts---where
 induction earns trust on grounds orthogonal to usefulness---are where short self-reproducing spans

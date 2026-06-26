@@ -12,10 +12,10 @@ reproduce and harder to over-read.
    measured on sample prose through the toy, or conjectured for transformers.
 4. **Real-text cache experiment.** Commit a small natural-prose fixture and a demo
    that reports cache benefit and reliance under char- and word-level tokenization.
-5. **Literature review.** Add a short related-work section covering cache models,
-   induction heads, indirect prompt injection, context poisoning, reinforced urns,
-   and the cryptanalytic analogy. This should separate cited background from this
-   repo's own contribution.
+5. **Literature review.** Done in `LITERATURE_REVIEW.md`: add a short related-work
+   section covering cache models, induction heads, indirect prompt injection,
+   context poisoning, reinforced urns, and the cryptanalytic analogy. This should
+   separate cited background from this repo's own contribution.
 6. **Sensitivity sweeps.** Run multiple seeds and vary vocabulary size, document
    length, Dirichlet strength, source concentration, and cache order.
 7. **Dual-use framing for contagion.** Keep the mechanism study, but pair attack

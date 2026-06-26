@@ -9,7 +9,7 @@ global+cache predictor as a cipher and the act of context-poisoning as a
 differential attack. Then it states a **conservation law** — context usefulness and
 context exploitability are two readings of one quantity — and reports that the law,
 once actually measured, is **conditional**: it holds in the sparse / earned-trust
-regime (the induction/PPM regime that real high-order contexts live in) and breaks
+regime (the regime high-order natural-language contexts plausibly occupy) and breaks
 in the dense / saturated-trust regime, where the model stays fully poisonable even
 where its context is useless.
 
@@ -114,9 +114,10 @@ seeding one self-looping poison `x*→x*` and measuring its takeover of generati
 | static 1-shot (control) | −0.94 |
 
 Here usefulness, trust, and propagated exploitability are one quantity. This is the
-regime that matters for real LLMs — high-order / natural-language contexts are
-mostly novel, so a context recurring *is* evidence of real structure (the same
-reason the repo sees reliance ≈ 0.01 on real prose).
+regime to test on real LLMs: high-order / natural-language contexts are mostly novel,
+so a context recurring may be evidence of real structure. The repo now includes a
+small sample-prose calibration through the toy substrate; it is a sanity check, not
+a transformer measurement.
 
 *Order 1 — dense, trust saturated.* Only 32 order-1 contexts exist, so the cache
 fills regardless and reliance pins at ~0.91 across **all** `pi_ctx`. Propagated

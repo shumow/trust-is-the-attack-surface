@@ -42,12 +42,13 @@ enough that a context recurring is itself evidence of real structure:
     recurrence, so reliance, usefulness, and propagated leverage rise together.
     corr(benefit, propagated) ~ 0.97. Here the conservation law holds.
 
-So the law is conditional: it holds in the earned-trust regime that real high-order
-/ natural-language contexts live in (and that the repo already saw as reliance ~0.01
-on real text), and breaks in the saturated-trust regime. The static 1-shot control
-is ANTI-correlated with usefulness in both (~ -0.95): raw per-cell pollutability
-actually falls as the cache fills, confirming it is a red herring -- only PROPAGATED
-leverage is the right exploitability object.
+So the law is conditional: it holds in the earned-trust regime that high-order /
+natural-language contexts plausibly occupy, and breaks in the saturated-trust regime.
+The repo includes a small sample-prose calibration through the same toy substrate,
+but real-transformer validation remains future work. The static 1-shot control is
+ANTI-correlated with usefulness in both (~ -0.95): raw per-cell pollutability actually
+falls as the cache fills, confirming it is a red herring -- only PROPAGATED leverage is
+the right exploitability object.
 
 Figure 2: condensation. At fixed high pi_ctx, sweep the cache weight (-> reliance)
 and seed a single self-looping poison; generation either shrugs it off or locks
