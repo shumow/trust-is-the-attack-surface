@@ -142,6 +142,32 @@ Citation fidelity: good if kept metaphorical. The repo's `R0` is an organizing
 quantity for cross-cache propagation in the toy, not a claim that prompt contagion
 follows biological epidemic dynamics.
 
+## Omissions and competing explanations
+
+The audit above checks whether the *cited* sources support the claims they are
+attached to. It is not a survey, and it does not by itself license any novelty
+claim. Two boundaries worth stating explicitly:
+
+- **Adjacent literature this note did not engage.** The trust-vs-usefulness framing
+  sits next to a large body of work on *training-time* data poisoning and backdoors
+  in language models, on gradient/optimization-based prompt-injection and adversarial
+  suffixes, and on planted-trigger ("sleeper agent") behavior. None of that is cited
+  or surveyed here. So any statement that "no published work addresses this" should
+  be read narrowly: the repo's specific contribution is the *exact, closed-form*
+  decoupling of context **trust** from context **usefulness** on a Markov substrate,
+  and the claim of novelty should be scoped to that exact object, not to context
+  poisoning in general, until a real related-work search is done.
+
+- **Competing explanations for the toy result are not ruled out.** The order-1 vs
+  order-3 split is currently demonstrated at one synthetic source configuration
+  (`V`, `G_CONC`, `D_CONC`, document length, Dirichlet strength) and, for the
+  headline correlation magnitudes, a single seed. The qualitative dichotomy is now
+  guarded across several seeds at a reduced configuration
+  (`tests/test_core.py::TrustSaturationDichotomyTests`), but a genuine sensitivity
+  sweep over those source parameters (REVISION_PLAN item 6) has not been run. Until
+  it is, "trust saturates because contexts are dense" is the repo's interpretation,
+  not a result shown to be robust to the substrate's free parameters.
+
 ## Recommendations
 
 1. Keep the current citations, but make the evidence boundary visible near the
@@ -152,3 +178,7 @@ follows biological epidemic dynamics.
    analogies plus exact toy calculations, not imported theorems about transformers.
 4. Add future citations from the transformer-validation sibling once those results
    exist; until then, transformer claims remain conjectures.
+5. Before any external "novel" framing, run a real related-work search over the
+   training-time-poisoning / backdoor / adversarial-prompt literature named in
+   "Omissions and competing explanations," and either cite it or scope the novelty
+   claim to the exact trust-vs-usefulness object.

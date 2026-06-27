@@ -7,6 +7,15 @@ import unittest
     "set RUN_SLOW_TESTS=1 to run the full conservation regression",
 )
 class SlowConservationRegressionTests(unittest.TestCase):
+    """Pins the exact headline correlation magnitudes from the full sweep.
+
+    These numbers are specific to ``demo_conservation.SEED`` (= 7) and that
+    module's configuration; they are a reproducibility lock, not a claim that the
+    magnitudes are seed-invariant. The *qualitative* claim (order-1 trust
+    saturates, order-3 trust is earned) is checked cheaply and across several
+    seeds by ``TrustSaturationDichotomyTests`` in ``tests/test_core.py``.
+    """
+
     def test_headline_correlations_stay_in_expected_ranges(self):
         import demo_conservation as D
 

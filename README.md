@@ -90,18 +90,31 @@ reproduction law, `demo_contagion_worm.py` for the worm, `demo_contagion_ppm.py`
 induction surrogate); see [contagion_notes.md](contagion_notes.md) for what each shows.
 
 `demo_real_text_cache.py` is a small calibration run on a committed prose fixture. It
-does **not** measure transformers; it reports how the toy cache behaves when fed
-natural-looking text rather than the synthetic two-layer source. Expected highlights:
-char-level order-1 saturates (`final_reliance ≈ 0.87`) while hurting prediction
-(`benefit ≈ -0.85` bits), and word-level order-3 stays sparse
-(`final_reliance ≈ 0.017`, `benefit ≈ +0.014` bits).
+does **not** measure transformers, and it is a single fixture under one
+configuration (`data/sample_prose.txt`, the `TOKEN_LEVELS` doc lengths, a 0.65
+split) — read the *direction*, not the digits, and re-run it on your own text
+before leaning on any number. The qualitative pattern it shows: a dense char-level
+order-1 cache **saturates** (`final_reliance` ~0.85–0.9) while *hurting* prediction
+(`benefit` strongly negative, ~ −0.8 bits), whereas a sparse word-level order-3
+cache stays **near-untrusted** (`final_reliance` of order 0.01–0.02) and roughly
+neutral on benefit. That is the same earned-vs-saturated split as the synthetic
+sweep, which is the only claim this fixture is meant to support.
 
 ## Test
 
 ```bash
-python -m unittest discover
-RUN_SLOW_TESTS=1 python -m unittest tests.test_slow_regression
+python -m unittest discover                                  # fast: ~2s
+RUN_SLOW_TESTS=1 python -m unittest tests.test_slow_regression  # full single-seed sweep
 ```
+
+The default `discover` suite covers the *proved-on-toy* math (de Bruijn
+minimality, the closed-form reproduction / min-repetition formulas) **and** a fast,
+multi-seed guard on the headline mechanism — that order-1 trust saturates
+independent of `pi_ctx` while order-3 trust is earned from recurrence
+(`tests/test_core.py::TrustSaturationDichotomyTests`). It asserts the qualitative
+dichotomy, not seed-specific magnitudes. The opt-in slow test pins the exact
+single-seed correlation numbers (`corr(benefit, propagated) ≈ 0.97` / `≈ 0.52`)
+from the full `demo_conservation` sweep; treat those magnitudes as `SEED=7`-specific.
 
 ## Papers
 
