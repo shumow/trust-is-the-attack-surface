@@ -41,6 +41,29 @@ class SlowConservationRegressionTests(unittest.TestCase):
                 self.assertGreater(summary["rel1_0"], 0.60)  # dense saturates
                 self.assertLess(summary["rel3_0"], 0.30)     # sparse earns
 
+    def test_trust_when_useless_collapses_onto_context_count(self):
+        """The joint V x order sweep's headline: reliance at pi=0 is governed by the
+        single density axis V**k. Decreasing in V**k, and pairs of equal V**k agree --
+        the within-iso-density spread is small against the overall spread. Coarse grid
+        + 1 seed to stay tractable; uses the V**k=4096 trio {8**4, 16**3, 64**2}."""
+        import numpy as np
+        import demo_joint_sweep as J
+
+        v_grid, k_grid = (8, 16, 64), (2, 3, 4)
+        pi_grid, seeds = np.array([0.0, 0.45, 0.9]), (1,)
+        rows = J.run(v_grid, k_grid, pi_grid, seeds)
+        by_nctx = {(r["V"], r["k"]): r["rel0"] for r in rows}
+        # monotone: a denser cache (smaller V**k) is at least as trusted-when-useless.
+        ordered = sorted(rows, key=lambda r: r["n_contexts"])
+        for a, b in zip(ordered, ordered[1:]):
+            self.assertGreaterEqual(a["rel0"] + 0.08, b["rel0"])
+        # collapse: the three V**k = 4096 configs agree.
+        trio = [by_nctx[(8, 4)], by_nctx[(16, 3)], by_nctx[(64, 2)]]
+        self.assertLess(np.std(trio), 0.10)
+        within, overall = J._collapse_quality(rows)
+        self.assertLess(within, 0.12)
+        self.assertGreater(overall, 0.20)
+
 
 if __name__ == "__main__":
     unittest.main()

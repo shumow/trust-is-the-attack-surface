@@ -158,17 +158,19 @@ claim. Two boundaries worth stating explicitly:
   and the claim of novelty should be scoped to that exact object, not to context
   poisoning in general, until a real related-work search is done.
 
-- **The toy result is now shown robust to the source parameters, but only one at a
-  time.** The order-1 vs order-3 split was originally demonstrated at one synthetic
-  configuration (`V`, `G_CONC`, `D_CONC`, document length, Dirichlet strength) and a
-  single seed. It is now guarded across seeds at a reduced configuration
-  (`tests/test_core.py::TrustSaturationDichotomyTests`) and swept across those source
+- **The toy result is now shown robust to the source parameters.** The order-1 vs
+  order-3 split was originally demonstrated at one synthetic configuration (`V`,
+  `G_CONC`, `D_CONC`, document length, Dirichlet strength) and a single seed. It is
+  now guarded across seeds at a reduced configuration
+  (`tests/test_core.py::TrustSaturationDichotomyTests`), swept across those source
   parameters one at a time over 3 seeds in `demo_sensitivity.py` (REVISION_PLAN item
-  6), where the reliance dichotomy holds in all 11 configurations and the decoupling
-  survives. What remains open is *joint* (non-one-at-a-time) variation, cache orders
-  beyond {1, 3}, and — the real gap — any measurement off the synthetic source.
-  "Trust saturates because contexts are dense" is now robust to the substrate's free
-  parameters individually, not yet a claim about transformers.
+  6, reliance dichotomy holds in all 11 configs, decoupling survives), and swept
+  *jointly* over `V` × cache order in `demo_joint_sweep.py` (orders 1–4), where
+  reliance-when-useless collapses onto the single density axis `V^k` — so `V` and
+  order matter only through their product, not separately. The real gap that remains
+  is any measurement *off* the synthetic source: "trust saturates because contexts
+  are dense" is now robust to the substrate's free parameters, but it is still not a
+  claim about transformers.
 
 ## Recommendations
 

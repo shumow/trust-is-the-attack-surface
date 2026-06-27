@@ -18,10 +18,12 @@ reproduce and harder to over-read.
    separate cited background from this repo's own contribution.
 6. **Sensitivity sweeps.** Run multiple seeds and vary vocabulary size, document
    length, Dirichlet strength, source concentration, and cache order.
-   *First cut done:* `demo_sensitivity.py` varies `V`, `G_CONC`, `D_CONC`, length,
-   and Dirichlet strength one at a time over 3 seeds; the trust-saturation dichotomy
-   holds in all 11 configs (`results/sensitivity.png`). Still open: joint variation
-   and cache orders beyond {1, 3}.
+   *Done.* `demo_sensitivity.py` varies `V`, `G_CONC`, `D_CONC`, length, and
+   Dirichlet strength one at a time over 3 seeds; the trust-saturation dichotomy
+   holds in all 11 configs (`results/sensitivity.png`). `demo_joint_sweep.py` varies
+   `V` × cache order jointly (orders 1–4), and reliance-when-useless collapses onto
+   the single density axis `V^k` (`results/joint_sweep.png`). Remaining: measurement
+   off the synthetic source (the transformer-validation sibling, item 9).
 7. **Dual-use framing for contagion.** Keep the mechanism study, but pair attack
    cost measurements with detection and mitigation measurements.
 8. **Publication cleanup.** Align README, Markdown articles, LaTeX articles, and

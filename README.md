@@ -109,6 +109,15 @@ structure to learn; sparse order-3 at 0.00–0.11), and order-1's `corr(benefit,
 propagated)` is unstable around zero while order-3's stays high — the decoupling is
 robust. Runs in ~3 min; included in `run_reproductions.py --full`.
 
+`demo_joint_sweep.py` closes the one-at-a-time caveat by varying vocabulary `V` and
+cache order `k` *jointly* (`{8,16,32,64}` × `{1,2,3,4}`, 3 seeds). Since the number
+of possible order-`k` contexts is `V^k`, it tests whether `V` and `k` matter only
+through that product. They do: reliance-when-useless falls as a clean sigmoid in
+`log V^k` and collapses across `(V,k)` pairs of equal `V^k` (the three `V^k = 4096`
+configs agree to within 0.08), so the qualitative "sparse vs dense" contrast becomes
+a one-parameter density law. Writes `results/joint_sweep.png` and `.csv`; ~3 min,
+included in `--full`.
+
 ## Test
 
 ```bash
@@ -150,6 +159,7 @@ pdflatex contagious_context.tex          && pdflatex contagious_context.tex
 | `demo_conservation.py` | Reproduces the trust/usefulness figures and correlation table. |
 | `demo_real_text_cache.py` | Sanity-checks toy-cache reliance on committed sample prose. |
 | `demo_sensitivity.py` | Source-parameter robustness sweep for the trust-saturation dichotomy. |
+| `demo_joint_sweep.py` | Joint `V` × cache-order sweep; reliance collapses onto the `V^k` density axis. |
 | `latex/contagious_context.tex` | The **context-contagion** article (built PDF alongside). |
 | `contagion.py` | Library for the contagion line (quine constructors, reproduction, attacker cost). |
 | `demo_contagion*.py` | The contagion experiments (payload, delivery, worm, induction surrogate). |

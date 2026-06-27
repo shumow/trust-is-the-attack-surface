@@ -152,8 +152,25 @@ stays robustly high (0.63–1.00), whereas order-1 has *no stable* relationship 
 benefit — it scatters across −0.59…+0.78 and averages near zero. The original `+0.52`
 was one draw from that unstable distribution; the honest summary is not "0.5" but
 "undefined," which is exactly what "exploitability is decoupled from usefulness"
-should look like. What this sweep does **not** yet do: joint (non-one-at-a-time)
-variation, or any cache order beyond {1, 3}.
+should look like.
+
+**The governing variable is a single density axis** (`results/joint_sweep.png`,
+`demo_joint_sweep.py`). The one-at-a-time sweep leaves open whether `V` and cache
+order `k` matter *separately* or only through context density. They jointly set the
+number of possible order-`k` contexts, `V^k`, so the sharper hypothesis is that
+trust-when-useless depends on `V^k` alone. Sweeping the full `V ∈ {8,16,32,64}` ×
+`k ∈ {1,2,3,4}` grid (3 seeds) confirms it: reliance at `pi_ctx = 0` falls
+monotonically from ~0.97 to ~0.00 as a clean sigmoid in `log V^k`, crossing 0.5 near
+`V^k ≈ 250`, and **collapses across `(V, k)` pairs of equal `V^k`** — the three
+configurations with `V^k = 4096` (8⁴, 16³, 64²) give reliance 0.15 / 0.11 / 0.07,
+and the two with `V^k = 64` give 0.80 / 0.77. The largest within-iso-density spread
+is 0.03 against an overall spread of 0.37, i.e. `V` and `k` matter almost entirely
+through their product. The coupling tracks the same axis: `corr(benefit, propagated)`
+is unstable across `[−0.92, +0.78]` in the dense corner (`V^k ≲ 64`, where trust is
+free) and robustly high (0.79–0.99) once `V^k ≳ 250` and trust must be earned. This
+promotes the paper's qualitative "context sparsity is the condition" from an
+order-1-vs-order-3 contrast to a quantitative one-parameter law. Still on the
+synthetic source, and still not a transformer measurement.
 
 ---
 
@@ -189,10 +206,12 @@ maximally poisonable) while contributing nothing.
   includes `demo_real_text_cache.py`, a small sample-prose calibration through the
   same toy substrate. That is a useful sparsity sanity check, not a transformer
   measurement and not a substitute for the real-model validation plan.
-- The headline is no longer single-config: `demo_sensitivity.py` varies the source
-  parameters one at a time over 3 seeds and the dichotomy holds in all 11
-  configurations (above). It is still a *one-at-a-time* sweep on the synthetic source,
-  not joint variation and not real text.
+- The headline is no longer single-config. `demo_sensitivity.py` varies the source
+  parameters one at a time (3 seeds, dichotomy holds in all 11 configs) and
+  `demo_joint_sweep.py` varies `V` × cache order jointly (orders 1–4), where
+  reliance-when-useless collapses onto the single density axis `V^k`. What remains:
+  this is all on the synthetic source — not a transformer measurement, and not a
+  substitute for the real-model validation plan.
 
 *Reproduce:* `python3 demo_conservation.py` → `results/conservation_law.png`,
 `results/condensation.png`, and the printed per-order correlation table.
