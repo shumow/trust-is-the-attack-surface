@@ -158,15 +158,17 @@ claim. Two boundaries worth stating explicitly:
   and the claim of novelty should be scoped to that exact object, not to context
   poisoning in general, until a real related-work search is done.
 
-- **Competing explanations for the toy result are not ruled out.** The order-1 vs
-  order-3 split is currently demonstrated at one synthetic source configuration
-  (`V`, `G_CONC`, `D_CONC`, document length, Dirichlet strength) and, for the
-  headline correlation magnitudes, a single seed. The qualitative dichotomy is now
-  guarded across several seeds at a reduced configuration
-  (`tests/test_core.py::TrustSaturationDichotomyTests`), but a genuine sensitivity
-  sweep over those source parameters (REVISION_PLAN item 6) has not been run. Until
-  it is, "trust saturates because contexts are dense" is the repo's interpretation,
-  not a result shown to be robust to the substrate's free parameters.
+- **The toy result is now shown robust to the source parameters, but only one at a
+  time.** The order-1 vs order-3 split was originally demonstrated at one synthetic
+  configuration (`V`, `G_CONC`, `D_CONC`, document length, Dirichlet strength) and a
+  single seed. It is now guarded across seeds at a reduced configuration
+  (`tests/test_core.py::TrustSaturationDichotomyTests`) and swept across those source
+  parameters one at a time over 3 seeds in `demo_sensitivity.py` (REVISION_PLAN item
+  6), where the reliance dichotomy holds in all 11 configurations and the decoupling
+  survives. What remains open is *joint* (non-one-at-a-time) variation, cache orders
+  beyond {1, 3}, and — the real gap — any measurement off the synthetic source.
+  "Trust saturates because contexts are dense" is now robust to the substrate's free
+  parameters individually, not yet a claim about transformers.
 
 ## Recommendations
 

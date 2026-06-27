@@ -139,6 +139,22 @@ then turns sharply upward: +0.01 at reliance 0.65, +0.15 at 0.96, +0.65 above 0.
 A single injected count locks in once context is trusted enough — the Pólya-urn
 knee, the sporulation event made quantitative.
 
+**The dichotomy survives the source's free parameters** (`results/sensitivity.png`,
+`demo_sensitivity.py`). The headline above is established at one source configuration
+and, for the precise correlation magnitudes, a single seed, so the obvious worry is
+that "dense saturates / sparse earns" is an artifact of that choice. Varying `V`,
+`G_CONC`, `D_CONC`, document length, and Dirichlet strength one at a time (averaged
+over 3 seeds, 11 configurations) leaves the **reliance** dichotomy intact in *every*
+config: at `pi_ctx = 0` the dense order-1 cache is trusted at 0.77–0.94 while the
+sparse order-3 cache sits at 0.00–0.11. The **decoupling** survives too, and in a
+sharper form than the single-seed demo suggested: order-3 `corr(benefit, propagated)`
+stays robustly high (0.63–1.00), whereas order-1 has *no stable* relationship to
+benefit — it scatters across −0.59…+0.78 and averages near zero. The original `+0.52`
+was one draw from that unstable distribution; the honest summary is not "0.5" but
+"undefined," which is exactly what "exploitability is decoupled from usefulness"
+should look like. What this sweep does **not** yet do: joint (non-one-at-a-time)
+variation, or any cache order beyond {1, 3}.
+
 ---
 
 ## 5. The cure, as a design constraint
@@ -173,6 +189,10 @@ maximally poisonable) while contributing nothing.
   includes `demo_real_text_cache.py`, a small sample-prose calibration through the
   same toy substrate. That is a useful sparsity sanity check, not a transformer
   measurement and not a substitute for the real-model validation plan.
+- The headline is no longer single-config: `demo_sensitivity.py` varies the source
+  parameters one at a time over 3 seeds and the dichotomy holds in all 11
+  configurations (above). It is still a *one-at-a-time* sweep on the synthetic source,
+  not joint variation and not real text.
 
 *Reproduce:* `python3 demo_conservation.py` → `results/conservation_law.png`,
 `results/condensation.png`, and the printed per-order correlation table.

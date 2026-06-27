@@ -100,6 +100,15 @@ cache stays **near-untrusted** (`final_reliance` of order 0.01–0.02) and rough
 neutral on benefit. That is the same earned-vs-saturated split as the synthetic
 sweep, which is the only claim this fixture is meant to support.
 
+`demo_sensitivity.py` checks that the headline is not an artifact of the baseline
+source configuration. It varies `V`, `G_CONC`, `D_CONC`, document length, and
+Dirichlet strength one at a time (3 seeds, 11 configs) and reports the trust-
+saturation dichotomy for each, writing `results/sensitivity.png` and `.csv`. Result:
+the reliance dichotomy holds in all 11 (dense order-1 trusted at 0.77–0.94 with no
+structure to learn; sparse order-3 at 0.00–0.11), and order-1's `corr(benefit,
+propagated)` is unstable around zero while order-3's stays high — the decoupling is
+robust. Runs in ~3 min; included in `run_reproductions.py --full`.
+
 ## Test
 
 ```bash
@@ -140,6 +149,7 @@ pdflatex contagious_context.tex          && pdflatex contagious_context.tex
 | `LITERATURE_REVIEW.md` | Related-work summary and citation-fidelity audit. |
 | `demo_conservation.py` | Reproduces the trust/usefulness figures and correlation table. |
 | `demo_real_text_cache.py` | Sanity-checks toy-cache reliance on committed sample prose. |
+| `demo_sensitivity.py` | Source-parameter robustness sweep for the trust-saturation dichotomy. |
 | `latex/contagious_context.tex` | The **context-contagion** article (built PDF alongside). |
 | `contagion.py` | Library for the contagion line (quine constructors, reproduction, attacker cost). |
 | `demo_contagion*.py` | The contagion experiments (payload, delivery, worm, induction surrogate). |

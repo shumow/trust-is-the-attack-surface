@@ -28,6 +28,7 @@ FULL_DEMOS = [
     "demo_contagion_joint.py",
     "demo_contagion_ppm.py",
     "demo_real_text_cache.py",
+    "demo_sensitivity.py",
 ]
 
 
