@@ -33,6 +33,7 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
+from demo_utils import result_path
 from markov_cache import generate
 import demo_contagion_hijack as H   # reuse build/victim/leverage helpers and constants
 
@@ -152,7 +153,7 @@ def plot(mp_wb, rows):
     ax.set_title('Q2 black-box entry-finding: observation alone recovers the optimum.\n'
                  'Frequency dominates; active leverage-probing is not worth its queries')
     ax.legend(fontsize=8, loc='upper right'); ax.grid(alpha=0.3, which='both')
-    fig.tight_layout(); fig.savefig('results/contagion_hijack_bb.png', dpi=130)
+    fig.tight_layout(); fig.savefig(result_path('contagion_hijack_bb.png'), dpi=130)
     print("\nwrote results/contagion_hijack_bb.png")
 
 

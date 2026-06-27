@@ -21,6 +21,17 @@ on real transformers.
 This repository is **independent** of, and depends on, the toy model library it
 analyzes.
 
+## Evidence status
+
+This repo now uses four labels for its claims:
+
+| Label | Meaning |
+|---|---|
+| **Proved on toy** | A combinatorial or closed-form statement about the global+cache Markov substrate. |
+| **Measured on toy** | A deterministic demo result reproduced by scripts in this repo. |
+| **Measured on sample prose through toy** | A sanity check using the same toy substrate on `data/sample_prose.txt`; useful for calibration, not a claim about transformers. |
+| **Conjectured for transformers** | A hypothesis for real LLMs, not established here. See `transformer_validation_plan.md`. |
+
 ## Relationship to the substrate library
 
 The Markov global+cache model lives in a separate library,
@@ -56,18 +67,41 @@ pip install -e "../Markov Models with Aux Context Caching[demos]"
 ## Reproduce
 
 ```bash
-python demo_conservation.py
+python run_reproductions.py
 ```
 
-Writes `results/conservation_law.png` and `results/condensation.png` and prints the
-per-cache-order correlation table. Expected: order-3 (sparse / earned trust)
-`corr(benefit, propagated) ≈ 0.97`; order-1 (dense / saturated trust) `≈ 0.5`;
-condensation knee at cache reliance ≈ 0.9.
+The default runner executes the central demos and creates `results/` if needed:
+`demo_conservation.py`, `demo_contagion.py`, `demo_contagion_ppm.py`, and
+`demo_real_text_cache.py`. For the full figure suite, run:
+
+```bash
+python run_reproductions.py --full
+```
+
+The main conservation demo writes `results/conservation_law.png` and
+`results/condensation.png` and prints the per-cache-order correlation table.
+Expected: order-3 (sparse / earned trust) `corr(benefit, propagated) ≈ 0.97`;
+order-1 (dense / saturated trust) `≈ 0.5`; condensation knee at cache reliance
+≈ 0.9.
 
 The context-contagion results are reproduced by the `demo_contagion*.py` scripts, each
 writing its figure(s) to `results/` (for example `demo_contagion.py` for the
 reproduction law, `demo_contagion_worm.py` for the worm, `demo_contagion_ppm.py` for the
 induction surrogate); see [contagion_notes.md](contagion_notes.md) for what each shows.
+
+`demo_real_text_cache.py` is a small calibration run on a committed prose fixture. It
+does **not** measure transformers; it reports how the toy cache behaves when fed
+natural-looking text rather than the synthetic two-layer source. Expected highlights:
+char-level order-1 saturates (`final_reliance ≈ 0.87`) while hurting prediction
+(`benefit ≈ -0.85` bits), and word-level order-3 stays sparse
+(`final_reliance ≈ 0.017`, `benefit ≈ +0.014` bits).
+
+## Test
+
+```bash
+python -m unittest discover
+RUN_SLOW_TESTS=1 python -m unittest tests.test_slow_regression
+```
 
 ## Papers
 
@@ -90,7 +124,9 @@ pdflatex contagious_context.tex          && pdflatex contagious_context.tex
 | `trust_is_the_attack_surface.md` | The trust/usefulness article (essay form). |
 | `latex/trust_is_the_attack_surface.tex` | The trust/usefulness results as a math/CS article (built PDF alongside). |
 | `docs_06_conservation_law.md` | Worked write-up + the cryptanalysis dictionary. |
+| `LITERATURE_REVIEW.md` | Related-work summary and citation-fidelity audit. |
 | `demo_conservation.py` | Reproduces the trust/usefulness figures and correlation table. |
+| `demo_real_text_cache.py` | Sanity-checks toy-cache reliance on committed sample prose. |
 | `latex/contagious_context.tex` | The **context-contagion** article (built PDF alongside). |
 | `contagion.py` | Library for the contagion line (quine constructors, reproduction, attacker cost). |
 | `demo_contagion*.py` | The contagion experiments (payload, delivery, worm, induction surrogate). |
@@ -99,3 +135,4 @@ pdflatex contagious_context.tex          && pdflatex contagious_context.tex
 | `llm_detection_research_proposal.md` | Related research proposal. |
 | `sister_library_packaging_recommendations.md` | Why/how the substrate is a library. |
 | `DEV_PLAN.md` | Packaging + wiring dev plan and its execution log. |
+| `REVISION_PLAN.md` | Review-driven cleanup and validation plan. |

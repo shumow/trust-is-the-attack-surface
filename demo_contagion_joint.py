@@ -25,6 +25,7 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
+from demo_utils import result_path
 from markov_cache import generate
 import contagion as C
 import demo_contagion_hijack as H
@@ -142,7 +143,7 @@ def plot(ood, grids, totals):
                   '(savings grow as the payload term reps$\\times$p shrinks the slack)')
     ax2.legend(fontsize=8); ax2.grid(alpha=0.3, axis='y')
 
-    fig.tight_layout(); fig.savefig('results/contagion_joint.png', dpi=130)
+    fig.tight_layout(); fig.savefig(result_path('contagion_joint.png'), dpi=130)
     print("\nwrote results/contagion_joint.png")
 
 

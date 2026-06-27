@@ -5,9 +5,10 @@ Both companion write-ups end on the same conjecture: the phenomena transfer to r
 transformers via the induction (copy) mechanism, which trusts a context span because it
 MATCHES a previous span, not because copying it helps. The toy already ships that
 mechanism: PpmPredictor is a variable-order, online, longest-match cache -- "saw A B ...
-now see A -> predict B" -- exactly an induction head, and the structural mirror of the
-fixed-order count cache used elsewhere. So we can test the conjecture WITHIN the toy by
-swapping the count cache for PPM and re-measuring how cheaply a quine reproduces.
+now see A -> predict B" -- a deliberately simple induction-head surrogate, and the
+structural mirror of the fixed-order count cache used elsewhere. So we can test the
+conjecture WITHIN the toy by swapping the count cache for PPM and re-measuring how
+cheaply a quine reproduces.
 
 The contrast is mechanistic. The count cache earns trust as reliance n/(n+a): many
 presentations. PPM earns trust from a single long, near-deterministic match: a couple of
@@ -31,6 +32,7 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
+from demo_utils import result_path
 from markov_cache import (peaky_transition_matrix, make_corpus, BackoffModel,
                           global_dist, make_predictor, generate)
 import contagion as C
@@ -170,7 +172,7 @@ def plot_worm(out):
     ax.set_title('(C) Induction extends the worm: long strings that die under\n'
                  'count-trust reach the full $T/p$ broadcast under induction')
     ax.legend(fontsize=8, loc='upper right'); ax.grid(alpha=0.3, which='both')
-    fig.tight_layout(); fig.savefig('results/contagion_ppm_worm.png', dpi=130)
+    fig.tight_layout(); fig.savefig(result_path('contagion_ppm_worm.png'), dpi=130)
     print("wrote results/contagion_ppm_worm.png")
 
 
@@ -201,7 +203,7 @@ def plot(curvesA, curvesB):
                   'Induction copies what a fixed low-order cache cannot')
     ax2.legend(fontsize=8, loc='lower right'); ax2.grid(alpha=0.3, which='both')
 
-    fig.tight_layout(); fig.savefig('results/contagion_ppm.png', dpi=130)
+    fig.tight_layout(); fig.savefig(result_path('contagion_ppm.png'), dpi=130)
     print("\nwrote results/contagion_ppm.png")
 
 

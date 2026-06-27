@@ -387,9 +387,9 @@ actually recurs, and in this source recurrence is itself evidence of genuine loc
 structure. So reliance climbs $0.02\to0.39$ with $\pictx$, benefit climbs $-0.02\to+0.47$,
 and propagated leverage climbs $0.52\to0.77$, all together:
 $\mathrm{corr}(\text{benefit},\text{propagated})=0.97$. Here the conservation hypothesis is
-true. This is the regime real high-order / natural-language contexts inhabit---most long
-prefixes are nearly unique---which is why the parent project sees cache reliance ${\approx}
-0.01$ on real prose.
+true. This is the regime high-order / natural-language contexts plausibly inhabit---most long
+prefixes are nearly unique. The repository includes a small prose calibration through the same
+toy substrate, but the real-transformer version of this claim remains to be measured.
 
 \begin{table}[t]
 \centering\small
@@ -499,16 +499,18 @@ where its context contributes least, with a condensation-like threshold above wh
 injected element can take over generation.
 \end{conjecture}
 
-There is a real reason to think transformers live mostly in the safe regime (a):
+There is a real reason to think transformers may often live in the safe regime (a):
 high-order natural-language contexts are sparse---most long prefixes are nearly unique---which
-is the earned-trust regime, consistent with the toy's reliance ${\approx}0.01$ on real text.
-If that is the whole story, in-context exploitability is paid for by in-context capability.
+is the earned-trust regime. The repository includes a small sample-prose calibration through
+the toy substrate, but this is not yet a transformer measurement. If that is the whole story,
+in-context exploitability is paid for by in-context capability.
 
 The conjecture's bite is regime (b): that trust-saturation regimes \emph{exist and are
 findable}, and are exactly the dangerous ones. The prime suspect is \textbf{induction}---the
 copy mechanism~\cite{olsson2022}. An induction head trusts a context span because it
 \emph{matches} a previous span, not because copying it helps; the toy's longest-match
-predictor is precisely this, and it earns trust on grounds orthogonal to benefit. So the
+predictor is a deliberately simple surrogate for that copy behavior, and it earns trust
+on grounds orthogonal to benefit. So the
 conjecture predicts that induction-dominated, highly repetitive, or heavily templated
 contexts---repeated boilerplate, structured formats, long verbatim quotes, retrieval dumps
 with duplicated passages---are where trust most decouples from usefulness, and where a single
@@ -548,8 +550,8 @@ reinforced-urn condensation---are standard Markov-chain results; the contributio
 cache as a poisonable membrane. All of it is established on the toy, exactly. None of it is
 yet measured on a transformer: the conjecture of \S\ref{sec:conjecture} is stated so that it
 can be attacked, and the claim that natural language sits in the earned-trust regime is
-motivated by the toy's own real-text reliance but remains an analogy across architectures
-until run through real tokenized text---the obvious next step.
+motivated by sparsity and by the repo's sample-prose calibration, but remains an analogy across
+architectures until real-transformer measurements are run.
 
 % ===========================================================================
 \begin{thebibliography}{9}

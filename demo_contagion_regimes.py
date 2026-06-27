@@ -29,6 +29,7 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
+from demo_utils import result_path
 from markov_cache import (peaky_transition_matrix, make_corpus, BackoffModel,
                           global_dist, make_predictor)
 import contagion as C
@@ -180,7 +181,7 @@ def plot(theory, conv):
                   f'(payload $p_g={pgc:.3f}$): $r_{{bb}}\\to r^*$ as queries grow')
     ax2.legend(fontsize=8, loc='upper right'); ax2.grid(alpha=0.3, which='both')
 
-    fig.tight_layout(); fig.savefig('results/contagion_regimes.png', dpi=130)
+    fig.tight_layout(); fig.savefig(result_path('contagion_regimes.png'), dpi=130)
     print("\nwrote results/contagion_regimes.png")
 
 

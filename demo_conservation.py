@@ -42,12 +42,13 @@ enough that a context recurring is itself evidence of real structure:
     recurrence, so reliance, usefulness, and propagated leverage rise together.
     corr(benefit, propagated) ~ 0.97. Here the conservation law holds.
 
-So the law is conditional: it holds in the earned-trust regime that real high-order
-/ natural-language contexts live in (and that the repo already saw as reliance ~0.01
-on real text), and breaks in the saturated-trust regime. The static 1-shot control
-is ANTI-correlated with usefulness in both (~ -0.95): raw per-cell pollutability
-actually falls as the cache fills, confirming it is a red herring -- only PROPAGATED
-leverage is the right exploitability object.
+So the law is conditional: it holds in the earned-trust regime that high-order /
+natural-language contexts plausibly occupy, and breaks in the saturated-trust regime.
+The repo includes a small sample-prose calibration through the same toy substrate,
+but real-transformer validation remains future work. The static 1-shot control is
+ANTI-correlated with usefulness in both (~ -0.95): raw per-cell pollutability actually
+falls as the cache fills, confirming it is a red herring -- only PROPAGATED leverage is
+the right exploitability object.
 
 Figure 2: condensation. At fixed high pi_ctx, sweep the cache weight (-> reliance)
 and seed a single self-looping poison; generation either shrugs it off or locks
@@ -62,6 +63,7 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
+from demo_utils import result_path
 from markov_cache import (
     peaky_transition_matrix, make_corpus, sample_document,
     BackoffModel, MarkovCounts, global_dist, combine_dirichlet,
@@ -255,7 +257,7 @@ def plot_sweep(results):
     axb.set_ylabel('Pearson r across the $\\pi_{ctx}$ sweep')
     axb.set_title('Where the conservation law holds')
     axb.legend(fontsize=8); axb.grid(alpha=0.3, axis='y')
-    fig.tight_layout(); fig.savefig('results/conservation_law.png', dpi=130)
+    fig.tight_layout(); fig.savefig(result_path('conservation_law.png'), dpi=130)
     print("\nwrote results/conservation_law.png")
     for o in orders:
         print(f"  order {o}: corr(benefit,propagated)={corrs[o][0]:+.3f}  "
@@ -274,7 +276,7 @@ def plot_condensation(rel_axis, takeover):
     ax.set_title('Condensation: one seeded self-loop locks in\n'
                  'once context is trusted (Pólya-urn transition)')
     ax.grid(alpha=0.3)
-    fig.tight_layout(); fig.savefig('results/condensation.png', dpi=130)
+    fig.tight_layout(); fig.savefig(result_path('condensation.png'), dpi=130)
     print("wrote results/condensation.png")
 
 # --------------------------------------------------------------------------- #

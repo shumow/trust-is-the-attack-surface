@@ -375,8 +375,8 @@ enough on lock-in to clear the condensation knee and puts the rest into entry.
 
 The discussion sections of both write-ups conjecture that the phenomena transfer to real
 transformers via the induction (copy) mechanism, which trusts a span because it *matches*,
-not because copying helps. The toy ships that mechanism: `PpmPredictor` is a variable-order
-online longest-match cache ("saw A B … now see A → predict B")—an induction-head surrogate
+not because copying helps. The toy ships a deliberately simple surrogate for that mechanism:
+`PpmPredictor` is a variable-order online longest-match cache ("saw A B … now see A → predict B")
 and the structural mirror of the fixed-order count cache. Swapping it in tests the conjecture
 *within* the toy. Mechanistic contrast: the count cache earns trust as reliance `n/(n+a)`
 (many presentations); PPM earns it from a single long near-deterministic match (a couple of
